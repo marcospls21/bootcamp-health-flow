@@ -12,7 +12,7 @@ jobs:
   destroy-infra:
     name: 💣 Destroy Infrastructure
     runs-on: ubuntu-latest
-    # Trava de segurança lógica: O job é cancelado se o input não for exato
+    # Trava de segurança: O job só roda se você digitar DESTROY
     if: ${{ github.event.inputs.confirmation == 'DESTROY' }}
     
     env:
@@ -29,9 +29,9 @@ jobs:
         uses: hashicorp/setup-terraform@v2
 
       - name: Terraform Init
-        working-directory: ./terraform
-        run: terraform init
+        # O -upgrade garante que ele baixe as versões corretas dos providers definidos no seu main.tf
+        run: terraform init -upgrade
 
       - name: Terraform Destroy
-        working-directory: ./terraform
+        # O -auto-approve pula a pergunta de "yes/no" do terminal, já que você confirmou no input do GitHub
         run: terraform destroy -auto-approve

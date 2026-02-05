@@ -3,7 +3,7 @@ data "aws_caller_identity" "current" {}
 
 # --- DEFINIÇÃO DAS ROLES ---
 locals {
-  # Insira os ARNs que funcionam no seu laboratório
+  # Ajuste os ARNs conforme o seu ambiente Academy
   cluster_role_arn = "arn:aws:iam::074442581040:role/c196815a5042644l13691097t1w074442-LabEksClusterRole-z4U15qTttNJF"
   node_role_arn    = "arn:aws:iam::074442581040:role/c196815a5042644l13691097t1w074442581-LabEksNodeRole-gSRwpwgLZvgg"
 }
@@ -27,11 +27,32 @@ module "vpc" {
   tags = { Project = "Health-Flow" }
 }
 
-# --- EKS CLUSTER (NATIVO) ---
+# --- SEGURANÇA: SG PARA O BANCO DE DADOS (Correção do erro de VPC) ---
+resource "aws_security_group" "db_sg" {
+  name        = "health-flow-db-sg"
+  description = "Permite acesso ao RDS"
+  vpc_id      = module.vpc.vpc_id # Força o SG a ficar na VPC certa
+
+  ingress {
+    from_port   = 5432
+    to_port     = 5432
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.0.0/16"] # Permite acesso de dentro da VPC
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# --- EKS CLUSTER ---
 resource "aws_eks_cluster" "this" {
   name     = "health-flow-cluster"
   role_arn = local.cluster_role_arn
-  version  = "1.28"
+  version  = "1.32" # Atualizado para evitar erro de AMI
 
   vpc_config {
     subnet_ids             = module.vpc.private_subnets
@@ -41,7 +62,7 @@ resource "aws_eks_cluster" "this" {
   tags = { Project = "Health-Flow" }
 }
 
-# --- EKS NODE GROUP (NATIVO) ---
+# --- EKS NODE GROUP ---
 resource "aws_eks_node_group" "this" {
   cluster_name    = aws_eks_cluster.this.name
   node_group_name = "health-flow-workers"
@@ -54,6 +75,7 @@ resource "aws_eks_node_group" "this" {
     min_size     = 1
   }
 
+  # Removida a versão explícita para pegar a mesma do cluster automaticamente
   instance_types = ["t3.medium"]
   capacity_type  = "ON_DEMAND"
 
@@ -62,18 +84,10 @@ resource "aws_eks_node_group" "this" {
   tags = { Project = "Health-Flow" }
 }
 
-# --- OIDC PROVIDER ---
-data "tls_certificate" "this" {
-  url = aws_eks_cluster.this.identity[0].oidc[0].issuer
-}
+# --- REMOVIDO OIDC PROVIDER (Bloqueado no Academy) ---
+# O bloco aws_iam_openid_connect_provider foi deletado para corrigir o erro 403.
 
-resource "aws_iam_openid_connect_provider" "this" {
-  client_id_list  = ["sts.amazonaws.com"]
-  thumbprint_list = [data.tls_certificate.this.certificates[0].sha1_fingerprint]
-  url             = aws_eks_cluster.this.identity[0].oidc[0].issuer
-}
-
-# --- RDS POSTGRES (CORRIGIDO) ---
+# --- RDS POSTGRES ---
 module "db" {
   source  = "terraform-aws-modules/rds/aws"
   version = "6.1.1"
@@ -88,16 +102,17 @@ module "db" {
   username          = "dbadmin"
   port              = 5432
 
-  # --- CORREÇÃO DO ERRO 'FAMILY' ---
-  family = "postgres14" # Obrigatório na versão 6+
+  family = "postgres14"
 
   manage_master_user_password = false
   password                    = "Password123!"
 
-  vpc_security_group_ids = [module.vpc.default_security_group_id]
+  # Usamos o SG criado manualmente acima para garantir o match de VPC
+  vpc_security_group_ids = [aws_security_group.db_sg.id]
   subnet_ids             = module.vpc.public_subnets
-  publicly_accessible    = true
-  skip_final_snapshot    = true
+
+  publicly_accessible = true
+  skip_final_snapshot = true
 }
 
 # --- HELM: Ingress ---
@@ -134,13 +149,53 @@ resource "helm_release" "argocd" {
   }
 }
 
-# --- DEPLOY DAS APPS (VIA SCRIPT) ---
-# Substitui o kubernetes_manifest para evitar erros de conexão no plano
+# --- HELM: Datadog ---
+resource "helm_release" "datadog" {
+  name             = "datadog"
+  repository       = "https://helm.datadoghq.com"
+  chart            = "datadog"
+  namespace        = "datadog"
+  create_namespace = true
+  version          = "3.58.0"
+
+  depends_on = [aws_eks_node_group.this]
+
+  set_sensitive {
+    name  = "datadog.apiKey"
+    value = var.datadog_api_key
+  }
+
+  set {
+    name  = "datadog.site"
+    value = "datadoghq.com"
+  }
+  set {
+    name  = "datadog.logs.enabled"
+    value = "true"
+  }
+  set {
+    name  = "datadog.logs.containerCollectAll"
+    value = "true"
+  }
+  set {
+    name  = "clusterAgent.enabled"
+    value = "true"
+  }
+  set {
+    name  = "clusterAgent.metricsProvider.enabled"
+    value = "true"
+  }
+  set {
+    name  = "kubeStateMetricsCore.enabled"
+    value = "true"
+  }
+}
+
+# --- DEPLOY APPS ---
 resource "null_resource" "deploy_apps" {
   depends_on = [helm_release.argocd]
 
   provisioner "local-exec" {
-    # Atualiza o kubeconfig e aplica os arquivos YAML
     command = <<EOT
       aws eks update-kubeconfig --region us-east-1 --name ${aws_eks_cluster.this.name}
       kubectl apply -f ../k8s/core/
