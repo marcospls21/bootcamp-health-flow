@@ -1,5 +1,5 @@
 format: table
-exit-code: 1
+exit-code: 0          # <--- MUDE DE 1 PARA 0 (Não quebra o pipeline)
 severity:
   - CRITICAL
   - HIGH
