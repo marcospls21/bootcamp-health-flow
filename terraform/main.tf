@@ -1,4 +1,22 @@
 data "aws_availability_zones" "available" {}
+data "aws_caller_identity" "current" {}
+
+# --- DEFINIÇÃO DAS ROLES (Garantia de Fallback) ---
+locals {
+  # 1. A Role Padrão do Academy (Tentativa Principal)
+  lab_role_arn = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/LabRole"
+
+  # 2. As Roles Específicas que você forneceu (Segurança)
+  # Se a LabRole falhar, troque as variáveis 'used_cluster_role' e 'used_node_role' abaixo por estas
+  specific_cluster_role = "arn:aws:iam::074442581040:role/c196815a5042644l13691097t1w074442-LabEksClusterRole-z4U15qTttNJF"
+  specific_node_role    = "arn:aws:iam::074442581040:role/c196815a5042644l13691097t1w074442581-LabEksNodeRole-gSRwpwgLZvgg"
+
+  # --- CONFIGURAÇÃO ATIVA ---
+  # Mude aqui se o 'terraform apply' der erro de permissão com a LabRole
+  # Padrão: local.lab_role_arn
+  used_cluster_role = local.lab_role_arn
+  used_node_role    = local.lab_role_arn
+}
 
 # --- VPC ---
 module "vpc" {
@@ -32,6 +50,13 @@ module "eks" {
 
   cluster_endpoint_public_access = true
 
+  # --- CONFIGURAÇÃO DE ROLES ---
+  create_iam_role = false
+  iam_role_arn    = local.used_cluster_role # Usa a role definida no topo
+
+  enable_irsa               = false
+  manage_aws_auth_configmap = false # Gerenciamos manualmente abaixo
+
   eks_managed_node_groups = {
     default = {
       min_size       = 1
@@ -39,14 +64,48 @@ module "eks" {
       desired_size   = 2
       instance_types = ["t3.medium"]
       capacity_type  = "ON_DEMAND"
+
+      create_iam_role = false
+      iam_role_arn    = local.used_node_role # Usa a role definida no topo
     }
   }
+}
+
+# --- AWS-AUTH (A Garantia de Acesso) ---
+# Aqui mapeamos TANTO a LabRole QUANTO a Role Específica.
+# Assim, qualquer uma que for usada terá permissão de entrar no cluster.
+resource "kubernetes_config_map" "aws_auth" {
+  metadata {
+    name      = "aws-auth"
+    namespace = "kube-system"
+  }
+
+  data = {
+    mapRoles = yamlencode([
+      # Opção 1: LabRole (Padrão)
+      {
+        rolearn  = local.lab_role_arn
+        username = "system:node:{{EC2PrivateDNSName}}"
+        groups   = ["system:bootstrappers", "system:nodes"]
+      },
+      # Opção 2: Role Específica de Node (Backup)
+      # Adicionamos preventivamente. Se os nodes usarem essa role, eles entram.
+      {
+        rolearn  = local.specific_node_role
+        username = "system:node:{{EC2PrivateDNSName}}"
+        groups   = ["system:bootstrappers", "system:nodes"]
+      }
+    ])
+    mapUsers = yamlencode([])
+  }
+
+  depends_on = [module.eks]
 }
 
 # --- RDS Postgres ---
 module "db" {
   source  = "terraform-aws-modules/rds/aws"
-  version = "6.1.1" # Fixando a versão para evitar surpresas
+  version = "6.1.1"
 
   identifier = "health-flow-db"
 
@@ -58,8 +117,6 @@ module "db" {
   username          = "dbadmin"
   port              = 5432
 
-  # CORREÇÃO CRÍTICA PARA O ERRO "PASSWORD":
-  # No módulo v6+, precisamos desativar o gerenciador de segredos para usar senha fixa
   manage_master_user_password = false
   password                    = "Password123!"
 
@@ -67,7 +124,7 @@ module "db" {
   subnet_ids             = module.vpc.public_subnets
   publicly_accessible    = true
   skip_final_snapshot    = true
-  family                 = "postgres14" # Necessário em algumas versões
+  family                 = "postgres14"
 }
 
 # --- Nginx Ingress ---
@@ -78,9 +135,7 @@ resource "helm_release" "nginx_ingress" {
   namespace        = "nginx-system"
   create_namespace = true
   version          = "4.7.1"
-
-  # Dependência explícita para garantir que o cluster exista antes do Helm rodar
-  depends_on = [module.eks]
+  depends_on       = [module.eks, kubernetes_config_map.aws_auth]
 
   set {
     name  = "controller.service.type"
@@ -96,8 +151,7 @@ resource "helm_release" "argocd" {
   namespace        = "argocd"
   create_namespace = true
   version          = "5.46.7"
-
-  depends_on = [module.eks]
+  depends_on       = [module.eks, kubernetes_config_map.aws_auth]
 
   set {
     name  = "server.service.type"
@@ -105,7 +159,7 @@ resource "helm_release" "argocd" {
   }
 }
 
-# --- Argo App: Core ---
+# --- Argo Apps ---
 resource "kubernetes_manifest" "app_core" {
   depends_on = [helm_release.argocd]
   manifest = {
@@ -134,7 +188,6 @@ resource "kubernetes_manifest" "app_core" {
   }
 }
 
-# --- Argo App: Video ---
 resource "kubernetes_manifest" "app_video" {
   depends_on = [helm_release.argocd]
   manifest = {
