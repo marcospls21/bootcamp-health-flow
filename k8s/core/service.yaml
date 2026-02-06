@@ -4,9 +4,9 @@ metadata:
   name: core-service
   namespace: health-core
 spec:
-  type: ClusterIP
+  type: ClusterIP  # Usamos ClusterIP + Port-Forward no Lab
   selector:
-    app: core-system
+    app: core
   ports:
-  - port: 80
-    targetPort: 80
+    - port: 80
+      targetPort: 80

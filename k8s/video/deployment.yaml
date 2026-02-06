@@ -3,18 +3,20 @@ kind: Deployment
 metadata:
   name: video-app
   namespace: health-video
+  labels:
+    app: video
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: video-system
+      app: video
   template:
     metadata:
       labels:
-        app: video-system
+        app: video
     spec:
       containers:
-      - name: app
-        image: k8s.gcr.io/echoserver:1.4 # Placeholder seguro
+      - name: video-app
+        image: nginx:alpine # Usamos Nginx genérico só pra testar
         ports:
-        - containerPort: 8080
+        - containerPort: 80
