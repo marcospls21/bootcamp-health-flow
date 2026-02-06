@@ -188,6 +188,53 @@ resource "helm_release" "datadog" {
   }
 }
 
+# --- MONITORAMENTO: DYNATRACE OPERATOR ---
+resource "helm_release" "dynatrace" {
+  name             = "dynatrace-operator"
+  repository       = "https://raw.githubusercontent.com/Dynatrace/dynatrace-operator/master/config/helm/repos/stable"
+  chart            = "dynatrace-operator"
+  namespace        = "dynatrace"
+  create_namespace = true
+  version          = "0.15.0" # Versão estável recente
+
+  # Garante que os nós existam antes de instalar
+  depends_on = [aws_eks_node_group.this]
+
+  # 1. URL do Ambiente
+  set {
+    name  = "apiUrl"
+    value = var.dynatrace_api_url
+  }
+
+  # 2. Token de Acesso (Sensível)
+  set_sensitive {
+    name  = "apiToken"
+    value = var.dynatrace_api_token
+  }
+
+  # 3. Nome do Cluster no Painel
+  set {
+    name  = "cluster"
+    value = "health-flow-cluster"
+  }
+
+  # 4. Habilita o modo FullStack (Monitora Nodes + Pods)
+  set {
+    name  = "classicFullStack.enabled"
+    value = "true"
+  }
+
+  # Otimização para Lab (diminui um pouco o consumo)
+  set {
+    name  = "oneAgent.resources.requests.cpu"
+    value = "100m"
+  }
+  set {
+    name  = "oneAgent.resources.requests.memory"
+    value = "256Mi"
+  }
+}
+
 # --- DEPLOY APPS (Com criação de Namespace) ---
 resource "null_resource" "deploy_apps" {
   depends_on = [helm_release.argocd]
