@@ -3,18 +3,30 @@ kind: Deployment
 metadata:
   name: core-app
   namespace: health-core
+  labels:
+    app: core
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: core-system
+      app: core
   template:
     metadata:
       labels:
-        app: core-system
+        app: core
     spec:
       containers:
-      - name: app
-        image: nginxdemos/hello:plain-text # Placeholder seguro
+      - name: core-app
+        # --- ATENÇÃO: SUBSTITUA ABAIXO ---
+        image: marcospls/health-core:latest
+        # ---------------------------------
+        imagePullPolicy: Always
         ports:
         - containerPort: 80
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"

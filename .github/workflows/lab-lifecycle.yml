@@ -1,4 +1,4 @@
-name: 🧪 Lab Lifecycle (Deploy > Wait > Destroy)
+name: 🧪 Lab Lifecycle (Sec > Build > Deploy > Wait > Destroy)
 
 on:
   workflow_dispatch:
@@ -13,21 +13,83 @@ on:
         - '60'
         - '120'
 
+env:
+  # Credenciais AWS
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+  AWS_REGION: us-east-1
+  
+  # Configuração Docker (Ajuste se usar ECR)
+  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+  DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+  IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/health-core:latest
+
 jobs:
-  lab-session:
-    name: Lab Session (Alive for ${{ github.event.inputs.duration_minutes }}m)
+  # --- 1. SEGURANÇA (SAST) ---
+  security-check:
+    name: 🛡️ Security Check (Trivy)
     runs-on: ubuntu-latest
-    # Define um tempo máximo para o Job não ficar preso para sempre
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Run Trivy FS Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          hide-progress: false
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+
+      # Descomente se tiver SonarCloud configurado
+      # - name: SonarCloud Scan
+      #   uses: SonarSource/sonarcloud-github-action@master
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  # --- 2. BUILD E PUSH DA IMAGEM ---
+  build-push:
+    name: 🐳 Build & Push Docker
+    needs: security-check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ env.DOCKER_PASSWORD }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./src/core-app
+          push: true
+          tags: ${{ env.IMAGE_NAME }}
+
+      - name: Run Trivy Image Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.IMAGE_NAME }}
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+          ignore-unfixed: true
+
+  # --- 3. INFRAESTRUTURA (LIFECYCLE) ---
+  lab-session:
+    name: 🧪 Lab Session (${{ github.event.inputs.duration_minutes }}m)
+    needs: build-push
+    runs-on: ubuntu-latest
     timeout-minutes: 180 
     
+    # Passa as variáveis para o Terraform
     env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
-      AWS_REGION: us-east-1
-    # Variáveis de Monitoramento
-      TF_VAR_datadog_api_key: ${{ secrets.TF_VAR_datadog_api_key }}     
-    # --- ADICIONE ESTAS DUAS LINHAS ---
+      TF_VAR_datadog_api_key: ${{ secrets.TF_VAR_datadog_api_key }}
       TF_VAR_dynatrace_api_url: ${{ secrets.TF_VAR_dynatrace_api_url }}
       TF_VAR_dynatrace_api_token: ${{ secrets.TF_VAR_dynatrace_api_token }}
 
@@ -38,15 +100,18 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
 
+      # Inicializa SEM S3 (Backend Local)
       - name: Terraform Init
         working-directory: ./terraform
         run: terraform init -upgrade
 
       - name: 🚀 Terraform Apply
+        id: apply
         working-directory: ./terraform
         run: terraform apply -auto-approve
 
       - name: ℹ️ Mostrar Acessos
+        if: steps.apply.outcome == 'success'
         working-directory: ./terraform
         run: |
           echo "✅ LAB PRONTO!"
@@ -58,19 +123,18 @@ jobs:
           terraform output argocd_password_command
           echo "---------------------------------------------------"
 
+      # O MODO DE ESPERA (O Lab fica "vivo" aqui)
       - name: ⏳ Aguardando Uso do Lab
+        if: steps.apply.outcome == 'success'
         run: |
           echo "O ambiente ficará ativo por ${{ github.event.inputs.duration_minutes }} minutos."
-          echo "Se você terminar antes, pode CANCELAR este workflow para iniciar a destruição imediata."
+          echo "Se terminar antes, clique em 'Cancel Workflow' para destruir tudo imediatamente."
           sleep $((${{ github.event.inputs.duration_minutes }} * 60))
 
-      # --- FASE DE DESTRUIÇÃO ---
-      # 'if: always()' garante que isso rode mesmo se o passo anterior der erro,
-      # timeout, ou se você clicar em "Cancel Workflow".
-      
+      # --- FASE DE DESTRUIÇÃO (Roda Sempre) ---
       - name: 🧨 Terraform Destroy (Auto-Cleanup)
-        if: always() 
+        if: always() # Garante que rode mesmo se cancelar ou der erro no wait
         working-directory: ./terraform
         run: |
-          echo "Iniciando destruição automática para salvar créditos..."
+          echo "Iniciando destruição automática..."
           terraform destroy -auto-approve
