@@ -1,131 +1,209 @@
-🏥 HealthFlow - DevOps & Cloud Engineering Lab
-O HealthFlow é uma plataforma de gestão de saúde digital simulada, projetada para demonstrar um ciclo completo de Engenharia de Cloud e SRE. Este laboratório implementa infraestrutura como código (IaC), orquestração de containers, GitOps e observabilidade.
+Peço desculpas! Você tem toda razão. No ambiente do AWS Academy, especificamente para EKS, eles costumam separar as roles em **ClusterRole** e **NodeRole** com sufixos aleatórios, e elas precisam ser passadas explicitamente para o Terraform via `locals` (ou variáveis) pois você não tem permissão para criar roles novas.
 
-O projeto foi adaptado para rodar dentro das restrições de segurança do ambiente AWS Academy.
-------------------------------------------------------------------
-🏗️ Arquitetura e Tecnologias
-Cloud Provider: AWS (VPC, EKS, RDS, S3).
+Abaixo está o **README.md** corrigido. Atualizei o **Passo 2** do Guia de Configuração para refletir exatamente essa necessidade de pegar os ARNs dessas duas roles específicas.
 
-IaC: Terraform (Backend S3 Remoto).
+---
 
-Orquestração: Amazon EKS (Kubernetes v1.29).
+# 🏥 HealthFlow - DevOps & SRE Cloud Lab
 
-Banco de Dados: Amazon RDS (PostgreSQL 14).
+O **HealthFlow** é uma plataforma de gestão de saúde digital simulada, projetada para demonstrar um ciclo de vida moderno de Engenharia de Software e Cloud. Este laboratório implementa **Infraestrutura como Código (IaC)**, **Containerização**, **Orquestração**, **CI/CD** e **Observabilidade Avançada**.
 
-GitOps: ArgoCD (Continuous Delivery).
+O projeto foi adaptado especificamente para rodar dentro das restrições de segurança e orçamento do ambiente **AWS Academy**.
 
-CI/CD: GitHub Actions.
+---
 
-Monitoramento: Datadog Agent (Logs & Métricas).
+## 🏗️ Arquitetura e Infraestrutura
 
-Aplicação: Python Flask (Backend + Frontend renderizado).
-------------------------------------------------------------------
-📋 Pré-requisitos (AWS Academy)
-Como este laboratório roda no AWS Academy, existem passos manuais obrigatórios antes da automação:
+O projeto utiliza uma arquitetura baseada em microsserviços rodando sobre Kubernetes gerenciado (EKS).
 
-Conta AWS Academy: Sessão ativa (o token expira a cada 4 horas).
+### Componentes Principais:
 
-Datadog Account: Uma conta (Trial ou Free) para obter a API Key.
+1. **Aplicação (Core):** Desenvolvida em Python (Flask), servindo interfaces web dinâmicas.
+2. **Containerização:** Docker é usado para empacotar a aplicação e suas dependências.
+3. **Orquestração (AWS EKS):** Cluster Kubernetes que gerencia a disponibilidade e escalabilidade dos pods.
+4. **Infraestrutura (Terraform):** Provisiona VPC, Subnets, Security Groups, Cluster EKS e Node Groups de forma automatizada.
+5. **Observabilidade (Datadog):** Agente instalado via Helm Chart para coleta de métricas, logs e APM (Application Performance Monitoring).
+6. **Pipeline (GitHub Actions):** Automação completa de Segurança (Trivy), Build (Docker Hub) e Deploy (Terraform).
 
-Bucket S3 (Manual):
+---
 
-Você deve criar manualmente um Bucket S3 na região us-east-1 para guardar o estado do Terraform.
+## 🚀 Moderno vs. Legado: Por que mudar?
 
-Nome sugerido: terraform-state-health-flow (deve ser único globalmente).
+Este projeto demonstra a evolução do "Modelo Tradicional" para o "Modelo Cloud Native/DevOps".
 
-Se não criar isso, o deploy falhará.
-------------------------------------------------------------------
-🚀 Passo a Passo: Configuração e Deploy
+| Característica | 🐢 Modelo Tradicional (Legado) | 🐇 Modelo HealthFlow (Moderno) |
+| --- | --- | --- |
+| **Infraestrutura** | Servidores físicos ou VMs configuradas manualmente ("Snowflakes"). | **IaC (Terraform):** Infraestrutura descartável, versionada e reprodutível em minutos. |
+| **Deploy** | Cópia manual de arquivos (FTP/SSH), risco alto de erro humano. | **CI/CD Automatizado:** Pipeline que testa, constrói e entrega sem intervenção humana. |
+| **Escalabilidade** | Limitada ao hardware físico; upgrades demorados. | **Elástica (Kubernetes):** Pods e Nodes escalam horizontalmente conforme a demanda. |
+| **Monitoramento** | Reativo (alguém avisa que caiu). Logs espalhados em arquivos. | **Observabilidade (Datadog):** Proativo. Dashboards centralizados, alertas e tracing em tempo real. |
+| **Ambiente** | "Funciona na minha máquina", mas falha em produção. | **Containers (Docker):** O mesmo ambiente exato roda no dev, teste e produção. |
 
-1. Configurar Segredos no GitHubNo seu repositório, vá em Settings > Secrets and variables > Actions e adicione:Nome do SecretDescriçãoAWS_ACCESS_KEY_IDSua Access Key do AWS Academy.AWS_SECRET_ACCESS_KEYSua Secret Key do AWS Academy.AWS_SESSION_TOKENSeu Session Token (Obrigatório no Academy).TF_VAR_datadog_api_keySua API Key gerada no painel do Datadog.
+---
 
-2. Ajustar o Backend do Terraform
-Abra o arquivo terraform/providers.tf e certifique-se de que o nome do bucket corresponde ao que você criou manualmente:
+## 📋 Pré-requisitos
 
-Terraform
-backend "s3" {
-  bucket = "terraform-state-health-flow" # <--- SEU BUCKET AQUI
-  key    = "health-flow/terraform.tfstate"
-  region = "us-east-1"
+Para rodar este laboratório, você precisará de contas ativas nas seguintes plataformas:
+
+1. **AWS Academy:** Acesso ao ambiente "Learner Lab".
+2. **GitHub:** Para hospedar este repositório e rodar as Actions.
+3. **Docker Hub:** Conta gratuita para armazenar as imagens da aplicação.
+4. **Datadog:** Conta (Trial ou Free) para obter a API Key de monitoramento.
+
+---
+
+## ⚙️ Guia de Configuração (Para Clonar e Rodar)
+
+Se você acabou de clonar este repositório, siga estes passos para garantir que o ambiente suba sem erros.
+
+### 1. Configurar Segredos no GitHub (Obrigatório)
+
+Vá em **Settings > Secrets and variables > Actions** e crie as seguintes variáveis. Sem elas, o pipeline falhará.
+
+| Nome da Secret | Valor / Descrição |
+| --- | --- |
+| `AWS_ACCESS_KEY_ID` | Copie do painel AWS Academy (AWS Details). |
+| `AWS_SECRET_ACCESS_KEY` | Copie do painel AWS Academy. |
+| `AWS_SESSION_TOKEN` | Copie do painel AWS Academy (**Crucial!** As credenciais expiram a cada 4h). |
+| `DOCKER_USERNAME` | Seu usuário do Docker Hub (ex: `joaosilva`). |
+| `DOCKER_PASSWORD` | Sua senha ou Token de Acesso do Docker Hub. |
+| `TF_VAR_datadog_api_key` | Sua API Key gerada no painel do Datadog (Organization Settings > API Keys). |
+
+### 2. Atualizar ARNs das Roles do EKS ⚠️ (CRUCIAL)
+
+No AWS Academy, você não pode criar Roles IAM, deve usar as roles pré-existentes. O ID da conta muda a cada laboratório, o que altera os ARNs. Você precisa atualizar o arquivo `terraform/main.tf` (ou onde estiver seu bloco `locals`) com os valores da sua sessão atual.
+
+1. Acesse o Console AWS -> **IAM** -> **Roles**.
+2. Busque por `LabEksClusterRole` (geralmente tem um sufixo aleatório).
+* Copie o ARN (Ex: `arn:aws:iam::123456:role/LabEksClusterRole-xxxx`).
+
+
+3. Busque por `LabEksNodeRole` (geralmente tem um sufixo aleatório).
+* Copie o ARN (Ex: `arn:aws:iam::123456:role/LabEksNodeRole-yyyy`).
+
+
+4. Abra o arquivo `terraform/main.tf` e atualize o bloco `locals`:
+
+```hcl
+locals {
+  # ARNs do Academy (ATUALIZE COM SEUS VALORES)
+  cluster_role_arn = "arn:aws:iam::SEU_ID:role/LabEksClusterRole-SEU_SUFIXO"
+  node_role_arn    = "arn:aws:iam::SEU_ID:role/LabEksNodeRole-SEU_SUFIXO"
 }
 
-3. Executar o Deploy (GitHub Actions)
-Faça um Push na branch main.
+```
 
-Acesse a aba Actions no GitHub.
+*Se não atualizar isso, o Terraform tentará usar roles de uma conta antiga e falhará.*
 
-O workflow Infra Deploy será iniciado automaticamente.
+### 3. Ajustar a Imagem Docker no Kubernetes
 
-Ele provisionará a VPC, Cluster EKS, RDS e instalará o ArgoCD e o Datadog.
+O arquivo de deploy do Kubernetes precisa saber qual é o **seu** repositório Docker.
 
-Tempo estimado: 15 a 20 minutos.
+1. Abra o arquivo `k8s/core/deployment.yaml`.
+2. Encontre a linha `image:`.
+3. Substitua pelo seu usuário:
+```yaml
+# Antes:
+image: USUARIO_ANTIGO/health-core:latest
 
-# SUBSTITUA PELA URL DO SEU REPOSITÓRIO (ex: https://github.com/seu-user/health-flow) no arquivo variables.tf
+# Depois (exemplo):
+image: joaosilva/health-core:latest
 
-Alterar as Roles do # ARNs do Academy 
+```
 
-cluster_role_arn = "arn:aws:iam::074442581040:role/c196815a5042644l13691097t1w074442-LabEksClusterRole-z4U15qTttNJF"
-node_role_arn    = "arn:aws:iam::074442581040:role/c196815a5042644l13691097t1w074442581-LabEksNodeRole-gSRwpwgLZvgg"
 
-------------------------------------------------------------------
-🌐 Acessando a Aplicação
-Após o sucesso do pipeline, você precisa conectar ao cluster para pegar os dados de acesso.
+4. Salve e faça o commit dessa alteração.
 
-1. Configurar acesso local (kubectl)
+### 4. Verificar Configuração do Terraform
 
-Bash
+Este projeto utiliza **Backend Local** para evitar problemas de permissão com Buckets S3 no AWS Academy.
+
+* Certifique-se de que o arquivo `terraform/providers.tf` **NÃO** possui um bloco `backend "s3"`. O estado deve ser salvo localmente na máquina do GitHub Actions durante a execução.
+
+---
+
+## 🧪 Executando o Laboratório (Lab Lifecycle)
+
+Este projeto usa um fluxo especial chamado **"Lab Lifecycle"** para economizar créditos da AWS. Ele cria, espera você usar, e destrói tudo automaticamente.
+
+1. Vá na aba **Actions** do GitHub.
+2. Selecione o workflow **🧪 Lab Lifecycle**.
+3. Clique em **Run workflow**.
+4. Escolha o tempo de duração (ex: **60 minutos**).
+5. O Pipeline fará:
+* 🛡️ Scan de segurança (Trivy).
+* 🐳 Build & Push da imagem Docker.
+* 🏗️ Provisionamento da Infra (Terraform Apply).
+* ⏳ **Pausa:** O sistema ficará "rodando" pelo tempo que você escolheu.
+* 🧨 **Auto-Destroy:** Ao final do tempo (ou se você cancelar), ele destrói tudo.
+
+
+
+---
+
+## 🌐 Acessando a Aplicação
+
+Após o Terraform finalizar a criação (aprox. 15 min), siga os passos para acessar:
+
+### 1. Atualizar Credenciais Locais
+
+No seu terminal (com AWS CLI configurado):
+
+```bash
 aws eks update-kubeconfig --region us-east-1 --name health-flow-cluster
 
-2. Acessar o Portal Web (HealthFlow)
-Para garantir o acesso rápido (bypass de DNS), use o Port-Forward:
+```
 
-Bash
+### 2. Verificar os Pods
+
+```bash
+kubectl get pods -n health-core
+
+```
+
+*Aguarde até o status estar como `Running`.*
+
+### 3. Acessar via Port-Forward (Recomendado)
+
+Como não usamos LoadBalancer público para economizar custos:
+
+```bash
 kubectl port-forward svc/core-service -n health-core 9090:80
 
-Acesse no navegador: http://localhost:9090
+```
 
-3. Acessar o ArgoCD (GitOps)
-Para ver o status de sincronização das aplicações:
+Acesse no navegador:
 
-1. Obter senha de admin
+* **Home:** [http://localhost:9090](https://www.google.com/search?q=http://localhost:9090)
+* **Login:** [http://localhost:9090/login.html](https://www.google.com/search?q=http://localhost:9090/login.html)
 
-Bash
-kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d && echo
+---
 
-2. Acessar Painel:
+## 📂 Estrutura do Projeto
 
-Bash
-kubectl port-forward svc/argocd-server -n argocd 8080:443
-Acesse: https://localhost:8080 (Usuário: admin)
-------------------------------------------------------------------
-📊 Observabilidade (Datadog)
-Se a API Key foi configurada corretamente, o cluster enviará dados automaticamente.
-
-Acesse app.datadoghq.com.
-
-Vá em Infrastructure List para ver os nós do EKS.
-
-Vá em Logs para ver os logs dos containers health-flow-core e health-flow-video.
-------------------------------------------------------------------
-🧨 Como Destruir (Evitar Custos!)
-Para limpar o laboratório e não consumir todos os créditos do Academy:
-
-Vá na aba Actions do GitHub.
-
-Selecione o workflow 🧨 Terraform Destroy (Manual) na lista lateral.
-
-Clique em Run workflow.
-
-Digite DESTROY na caixa de confirmação e execute.
-
-⚠️ Atenção: Se o terraform destroy falhar (por perda de estado), você deve apagar manualmente na AWS nesta ordem: Load Balancers (EC2) -> Node Groups (EKS) -> Cluster (EKS) -> RDS -> VPC.
-------------------------------------------------------------------
-📝 Estrutura do Projeto
-Plaintext
+```text
 .
-├── .github/workflows/   # Pipelines de CI/CD (Deploy e Destroy)
-├── k8s/                 # Manifestos Kubernetes (Deployments, Services)
+├── .github/workflows/
+│   └── lab-lifecycle.yml  # Pipeline mestre (Security > Build > Deploy > Wait > Destroy)
+├── k8s/
+│   ├── core/              # Manifestos da Aplicação Principal
+│   └── video/             # Manifestos do Serviço de Vídeo (Placeholder)
 ├── src/
-│   └── core-app/        # Código Python Flask + Templates HTML
-├── terraform/           # Código IaC (Main, VPC, EKS, RDS, Helm)
-└── README.md            # Documentação
+│   └── core-app/          # Código Fonte Python (Flask) + Dockerfile
+├── terraform/             # Código IaC
+│   ├── main.tf            # Definição do EKS, Helm Charts (Datadog) e Locals das Roles
+│   ├── vpc.tf             # Rede
+│   ├── variables.tf       # Variáveis gerais
+│   └── outputs.tf         # Saídas (Comandos de conexão)
+└── README.md              # Documentação
+
+```
+
+---
+
+## ⚠️ Solução de Problemas Comuns
+
+* **Erro de Permissão (Roles):** Você esqueceu de atualizar o `cluster_role_arn` e `node_role_arn` no `main.tf` com os valores da sessão atual.
+* **Erro `No such host` no terminal:** Suas credenciais locais apontam para um cluster antigo. Rode o comando `aws eks update-kubeconfig` novamente.
+* **Erro `403 Forbidden` no Terraform:** Suas credenciais da AWS Academy expiraram. Gere novas no portal e atualize as Secrets do GitHub.
+* **Página Web não carrega:** Verifique se o `kubectl port-forward` está rodando e se a imagem no `deployment.yaml` está correta.
