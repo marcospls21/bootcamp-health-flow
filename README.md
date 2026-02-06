@@ -107,10 +107,22 @@ image: SEU_USUARIO_DOCKER/health-core:latest
 
 ---
 
-## 🧪 Executando o Lab
+## 🧪 Executando o Laboratório (Lab Lifecycle)
 
-Vá na aba **Actions** do GitHub e dispare o workflow **🧪 Lab Lifecycle**.
-Ele fará todo o processo: **Security Scan > Build > Provisionamento Infra > Deploy Apps**.
+Este projeto usa um fluxo especial chamado **"Lab Lifecycle"** para economizar créditos da AWS. Ele cria, espera você usar, e destrói tudo automaticamente.
+
+1. Vá na aba **Actions** do GitHub.
+2. Selecione o workflow **🧪 Lab Lifecycle**.
+3. Clique em **Run workflow**.
+4. Escolha o tempo de duração (ex: **60 minutos**).
+5. O Pipeline fará:
+* 🛡️ Scan de segurança (Trivy).
+* 🐳 Build & Push da imagem Docker.
+* 🏗️ Provisionamento da Infra (Terraform Apply).
+* ⏳ **Pausa:** O sistema ficará "rodando" pelo tempo que você escolheu.
+* 🧨 **Auto-Destroy:** Ao final do tempo (ou se você cancelar), ele destrói tudo.
+
+
 
 ---
 
