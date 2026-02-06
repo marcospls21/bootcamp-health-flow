@@ -188,17 +188,6 @@ resource "helm_release" "datadog" {
   }
 }
 
-  # Recursos reduzidos para o Lab Academy
-  set {
-    name  = "oneAgent.resources.requests.cpu"
-    value = "50m"
-  }
-  set {
-    name  = "oneAgent.resources.requests.memory"
-    value = "128Mi"
-  }
-}
-
 # --- DEPLOY APPS (Com criação de Namespace) ---
 resource "null_resource" "deploy_apps" {
   depends_on = [helm_release.argocd]
