@@ -48,9 +48,32 @@ Para rodar este laboratório, você precisará de contas ativas nas seguintes pl
 
 ## ⚙️ Guia de Configuração (Para Clonar e Rodar)
 
-Se você acabou de clonar este repositório, siga estes passos para garantir que o ambiente suba sem erros.
+Siga esta ordem exata para configurar o ambiente.
 
-### 1. Configurar Segredos no GitHub (Obrigatório)
+### 1. Configurar o Repositório Remoto (Git)
+
+Se você clonou este projeto, a URL de origem (`origin`) ainda aponta para o repositório original. Para rodar as Actions na **sua** conta, você deve apontar para o seu próprio repositório.
+
+1. Crie um **novo repositório vazio** no seu GitHub (ex: `meu-lab-devops`).
+2. No terminal do projeto, execute:
+```bash
+# Remove o vínculo com o repositório original
+git remote remove origin
+
+# Adiciona o seu repositório como nova origem
+git remote add origin https://github.com/SEU_USUARIO/NOME_DO_SEU_REPO.git
+
+# Garante que está na branch principal
+git branch -M main
+
+# Envia o código para o seu GitHub
+git push -u origin main
+
+```
+
+
+
+### 2. Configurar Segredos no GitHub (Obrigatório)
 
 Vá em **Settings > Secrets and variables > Actions** e crie as seguintes variáveis. Sem elas, o pipeline falhará.
 
@@ -63,33 +86,47 @@ Vá em **Settings > Secrets and variables > Actions** e crie as seguintes variá
 | `DOCKER_PASSWORD` | Sua senha ou Token de Acesso do Docker Hub. |
 | `TF_VAR_datadog_api_key` | Sua API Key gerada no painel do Datadog (Organization Settings > API Keys). |
 
-### 2. Atualizar ARNs das Roles do EKS ⚠️ (CRUCIAL)
+### 3. Ajustar Variáveis do Terraform ⚠️ (CRUCIAL)
 
-No AWS Academy, você não pode criar Roles IAM, deve usar as roles pré-existentes. O ID da conta muda a cada laboratório, o que altera os ARNs. Você precisa atualizar o arquivo `terraform/main.tf` (ou onde estiver seu bloco `locals`) com os valores da sua sessão atual.
+Você precisa editar os arquivos do Terraform para que eles reconheçam a sua conta da AWS Academy e o seu repositório GitHub.
 
-1. Acesse o Console AWS -> **IAM** -> **Roles**.
-2. Busque por `LabEksClusterRole` (geralmente tem um sufixo aleatório).
-* Copie o ARN (Ex: `arn:aws:iam::123456:role/LabEksClusterRole-xxxx`).
+#### A. Atualizar ARNs das Roles (main.tf)
 
+No AWS Academy, você deve usar roles pré-existentes e os IDs mudam a cada lab.
 
-3. Busque por `LabEksNodeRole` (geralmente tem um sufixo aleatório).
-* Copie o ARN (Ex: `arn:aws:iam::123456:role/LabEksNodeRole-yyyy`).
-
-
-4. Abra o arquivo `terraform/main.tf` e atualize o bloco `locals`:
-
+1. No Console AWS, vá em **IAM > Roles**.
+2. Copie o ARN da `LabEksClusterRole` e da `LabEksNodeRole`.
+3. No arquivo `terraform/main.tf`, atualize o bloco `locals`:
 ```hcl
 locals {
-  # ARNs do Academy (ATUALIZE COM SEUS VALORES)
-  cluster_role_arn = "arn:aws:iam::SEU_ID:role/LabEksClusterRole-SEU_SUFIXO"
-  node_role_arn    = "arn:aws:iam::SEU_ID:role/LabEksNodeRole-SEU_SUFIXO"
+  # ATUALIZE COM SEUS VALORES REAIS
+  cluster_role_arn = "arn:aws:iam::SEU_ID:role/LabEksClusterRole-XXXX"
+  node_role_arn    = "arn:aws:iam::SEU_ID:role/LabEksNodeRole-XXXX"
 }
 
 ```
 
-*Se não atualizar isso, o Terraform tentará usar roles de uma conta antiga e falhará.*
 
-### 3. Ajustar a Imagem Docker no Kubernetes
+
+#### B. Atualizar URL do Repositório (variables.tf)
+
+O ArgoCD precisa saber onde buscar os arquivos Kubernetes. Se você não mudar isso, ele vai olhar para o repositório do criador do curso, e não para o seu.
+
+1. Abra o arquivo `terraform/variables.tf`.
+2. Encontre a variável (geralmente chamada `repo_url` ou `project_url`).
+3. Altere o `default` para a URL do **seu** GitHub:
+```hcl
+variable "repo_url" {
+  description = "URL do repositório Git"
+  # COLOQUE A URL DO SEU NOVO REPOSITÓRIO AQUI
+  default     = "https://github.com/SEU_USUARIO/NOME_DO_SEU_REPO"
+}
+
+```
+
+
+
+### 4. Ajustar a Imagem Docker no Kubernetes
 
 O arquivo de deploy do Kubernetes precisa saber qual é o **seu** repositório Docker.
 
@@ -106,13 +143,7 @@ image: joaosilva/health-core:latest
 ```
 
 
-4. Salve e faça o commit dessa alteração.
-
-### 4. Verificar Configuração do Terraform
-
-Este projeto utiliza **Backend Local** para evitar problemas de permissão com Buckets S3 no AWS Academy.
-
-* Certifique-se de que o arquivo `terraform/providers.tf` **NÃO** possui um bloco `backend "s3"`. O estado deve ser salvo localmente na máquina do GitHub Actions durante a execução.
+4. Salve e faça o commit de todas as alterações.
 
 ---
 
@@ -187,7 +218,7 @@ Acesse no navegador:
 ├── terraform/             # Código IaC
 │   ├── main.tf            # Definição do EKS, Helm Charts (Datadog) e Locals das Roles
 │   ├── vpc.tf             # Rede
-│   ├── variables.tf       # Variáveis gerais
+│   ├── variables.tf       # Variáveis gerais (URL do Git)
 │   └── outputs.tf         # Saídas (Comandos de conexão)
 └── README.md              # Documentação
 
@@ -197,7 +228,7 @@ Acesse no navegador:
 
 ## ⚠️ Solução de Problemas Comuns
 
-* **Erro de Permissão (Roles):** Você esqueceu de atualizar o `cluster_role_arn` e `node_role_arn` no `main.tf` com os valores da sessão atual.
-* **Erro `No such host` no terminal:** Suas credenciais locais apontam para um cluster antigo. Rode o comando `aws eks update-kubeconfig` novamente.
+* **Erro `Authentication failed` no Git Push:** Você esqueceu de executar o **Passo 1** e trocar a URL de origem para o seu repositório.
+* **ArgoCD não sincroniza minhas mudanças:** Você esqueceu de atualizar a variável `repo_url` no `variables.tf` (**Passo 3B**).
+* **Erro de Permissão (Roles):** Você esqueceu de atualizar o `cluster_role_arn` e `node_role_arn` no `main.tf` (**Passo 3A**).
 * **Erro `403 Forbidden` no Terraform:** Suas credenciais da AWS Academy expiraram. Gere novas no portal e atualize as Secrets do GitHub.
-* **Página Web não carrega:** Verifique se o `kubectl port-forward` está rodando e se a imagem no `deployment.yaml` está correta.
