@@ -66,6 +66,7 @@ Alterar as Roles do # ARNs do Academy
 
 cluster_role_arn = "arn:aws:iam::074442581040:role/c196815a5042644l13691097t1w074442-LabEksClusterRole-z4U15qTttNJF"
 node_role_arn    = "arn:aws:iam::074442581040:role/c196815a5042644l13691097t1w074442581-LabEksNodeRole-gSRwpwgLZvgg"
+
 ------------------------------------------------------------------
 🌐 Acessando a Aplicação
 Após o sucesso do pipeline, você precisa conectar ao cluster para pegar os dados de acesso.
