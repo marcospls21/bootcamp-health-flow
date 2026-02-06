@@ -1,6 +1,6 @@
 # 🏥 HealthFlow - DevOps & SRE Cloud Lab
 
-O **HealthFlow** é uma plataforma de gestão de saúde digital simulada, projetada para demonstrar um ciclo de vida moderno de Engenharia de Software e Cloud. Este laboratório implementa **Infraestrutura como Código (IaC)**, **Containerização**, **Orquestração**, **CI/CD** e **Observabilidade Avançada**.
+O **HealthFlow** é uma plataforma de gestão de saúde digital simulada, projetada para demonstrar um ciclo de vida moderno de Engenharia de Software e Cloud. Este laboratório implementa **Infraestrutura como Código (IaC)**, **GitOps**, **Containerização**, **Orquestração** e **Observabilidade Avançada**.
 
 O projeto foi adaptado especificamente para rodar dentro das restrições de segurança e orçamento do ambiente **AWS Academy**.
 
@@ -15,9 +15,10 @@ O projeto utiliza uma arquitetura baseada em microsserviços rodando sobre Kuber
 1. **Aplicação (Core):** Desenvolvida em Python (Flask), servindo interfaces web dinâmicas.
 2. **Containerização:** Docker é usado para empacotar a aplicação e suas dependências.
 3. **Orquestração (AWS EKS):** Cluster Kubernetes que gerencia a disponibilidade e escalabilidade dos pods.
-4. **Infraestrutura (Terraform):** Provisiona VPC, Subnets, Security Groups, Cluster EKS e Node Groups de forma automatizada.
-5. **Observabilidade (Datadog):** Agente instalado via Helm Chart para coleta de métricas, logs e APM (Application Performance Monitoring).
-6. **Pipeline (GitHub Actions):** Automação completa de Segurança (Trivy), Build (Docker Hub) e Deploy (Terraform).
+4. **GitOps (ArgoCD):** Controlador que sincroniza automaticamente o estado do cluster com o código deste repositório.
+5. **Infraestrutura (Terraform):** Provisiona VPC, Subnets, Security Groups, Cluster EKS e Node Groups de forma automatizada.
+6. **Observabilidade (Datadog):** Agente instalado via Helm Chart para coleta de métricas, logs e APM.
+7. **Pipeline (GitHub Actions):** Automação de Segurança (Trivy), Build (Docker Hub) e Deploy da Infraestrutura.
 
 ---
 
@@ -28,10 +29,9 @@ Este projeto demonstra a evolução do "Modelo Tradicional" para o "Modelo Cloud
 | Característica | 🐢 Modelo Tradicional (Legado) | 🐇 Modelo HealthFlow (Moderno) |
 | --- | --- | --- |
 | **Infraestrutura** | Servidores físicos ou VMs configuradas manualmente ("Snowflakes"). | **IaC (Terraform):** Infraestrutura descartável, versionada e reprodutível em minutos. |
-| **Deploy** | Cópia manual de arquivos (FTP/SSH), risco alto de erro humano. | **CI/CD Automatizado:** Pipeline que testa, constrói e entrega sem intervenção humana. |
+| **Deploy** | Cópia manual de arquivos (FTP/SSH), risco alto de erro humano. | **GitOps (ArgoCD):** O Cluster se auto-atualiza baseado no Git. Rollback instantâneo. |
 | **Escalabilidade** | Limitada ao hardware físico; upgrades demorados. | **Elástica (Kubernetes):** Pods e Nodes escalam horizontalmente conforme a demanda. |
 | **Monitoramento** | Reativo (alguém avisa que caiu). Logs espalhados em arquivos. | **Observabilidade (Datadog):** Proativo. Dashboards centralizados, alertas e tracing em tempo real. |
-| **Ambiente** | "Funciona na minha máquina", mas falha em produção. | **Containers (Docker):** O mesmo ambiente exato roda no dev, teste e produção. |
 
 ---
 
@@ -95,7 +95,7 @@ Você precisa editar os arquivos do Terraform para que eles reconheçam a sua co
 No AWS Academy, você deve usar roles pré-existentes e os IDs mudam a cada lab.
 
 1. No Console AWS, vá em **IAM > Roles**.
-2. Copie o ARN da `LabEksClusterRole` e da `LabEksNodeRole`.
+2. Copie o ARN da `LabEksClusterRole` e da `LabEksNodeRole` (busque pelos nomes).
 3. No arquivo `terraform/main.tf`, atualize o bloco `locals`:
 ```hcl
 locals {
@@ -113,7 +113,7 @@ locals {
 O ArgoCD precisa saber onde buscar os arquivos Kubernetes. Se você não mudar isso, ele vai olhar para o repositório do criador do curso, e não para o seu.
 
 1. Abra o arquivo `terraform/variables.tf`.
-2. Encontre a variável (geralmente chamada `repo_url` ou `project_url`).
+2. Encontre a variável (geralmente chamada `repo_url`).
 3. Altere o `default` para a URL do **seu** GitHub:
 ```hcl
 variable "repo_url" {
@@ -190,6 +190,70 @@ kubectl get pods -n health-core
 
 ---
 
+### 2. Acessar via Port-Forward
+
+Como não criamos LoadBalancer para a aplicação Core (para economizar), usamos o túnel:
+
+```bash
+kubectl port-forward svc/core-service -n health-core 9090:80
+
+```
+
+Acesse no navegador:
+
+* **Home:** [http://localhost:9090](https://www.google.com/search?q=http://localhost:9090)
+* **Login:** [http://localhost:9090/login.html](https://www.google.com/search?q=http://localhost:9090/login.html)
+
+---
+
+## 🐙 Acessando o ArgoCD (GitOps)
+
+Para ver o "cérebro" do GitOps funcionando. Vamos gerar um endereço público para ele.
+
+### 1. Recuperar a Senha de Admin
+
+Execute no seu terminal:
+
+```bash
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
+
+```
+
+*Copie a senha que aparecerá na tela.*
+
+### 2. Gerar Endereço Público (LoadBalancer)
+
+Por padrão o ArgoCD é interno. Vamos expô-lo para a internet:
+
+```bash
+# Transforma o serviço em LoadBalancer
+kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
+
+```
+
+### 3. Pegar o Link de Acesso
+
+Execute o comando abaixo e aguarde uns instantes até aparecer o endereço (hostname):
+
+```bash
+kubectl get svc argocd-server -n argocd --output jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+
+```
+
+* **Acesse:** Copie o endereço (ex: `xxxx.us-east-1.elb.amazonaws.com`) e cole no navegador com `https://`.
+* **Login:** Usuário `admin` e a senha do passo 1.
+
+> ⚠️ **Nota:** O LoadBalancer consome créditos da AWS enquanto estiver ativo.
+
+### 4. O que verificar?
+
+Dentro do painel, você verá uma aplicação chamada `health-flow-app`.
+
+* **Status Synced (Verde):** Significa que o Cluster está igual ao GitHub.
+* **Status Healthy (Coração Verde):** Significa que os pods estão rodando sem erros.
+
+---
+
 ## 📂 Estrutura do Projeto
 
 ```text
@@ -202,7 +266,7 @@ kubectl get pods -n health-core
 ├── src/
 │   └── core-app/          # Código Fonte Python (Flask) + Dockerfile
 ├── terraform/             # Código IaC
-│   ├── main.tf            # Definição do EKS, Helm Charts (Datadog) e Locals das Roles
+│   ├── main.tf            # Definição do EKS, Helm Charts (Datadog/ArgoCD) e Locals das Roles
 │   ├── vpc.tf             # Rede
 │   ├── variables.tf       # Variáveis gerais (URL do Git)
 │   └── outputs.tf         # Saídas (Comandos de conexão)
@@ -214,7 +278,7 @@ kubectl get pods -n health-core
 
 ## ⚠️ Solução de Problemas Comuns
 
-* **Erro `Authentication failed` no Git Push:** Você esqueceu de executar o **Passo 1** e trocar a URL de origem para o seu repositório.
-* **ArgoCD não sincroniza minhas mudanças:** Você esqueceu de atualizar a variável `repo_url` no `variables.tf` (**Passo 3B**).
-* **Erro de Permissão (Roles):** Você esqueceu de atualizar o `cluster_role_arn` e `node_role_arn` no `main.tf` (**Passo 3A**).
-* **Erro `403 Forbidden` no Terraform:** Suas credenciais da AWS Academy expiraram. Gere novas no portal e atualize as Secrets do GitHub.
+* **ArgoCD "OutOfSync":** Significa que alguém mudou algo no Cluster manualmente. Clique em "Sync" no painel para corrigir.
+* **ArgoCD não sincroniza:** Verifique a variável `repo_url` no `variables.tf`.
+* **Erro `Authentication failed` no Git Push:** Troque a URL de origem para o seu repositório (**Passo 1**).
+* **Erro `403 Forbidden` no Terraform:** Suas credenciais da AWS Academy expiraram. Gere novas.
