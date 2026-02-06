@@ -188,45 +188,6 @@ resource "helm_release" "datadog" {
   }
 }
 
-resource "helm_release" "dynatrace" {
-  name = "dynatrace-operator"
-
-  # --- MUDANÇA IMPORTANTE: USANDO OCI (ECR AWS) ---
-  repository = "oci://public.ecr.aws/dynatrace"
-  chart      = "dynatrace-operator"
-  # ------------------------------------------------
-
-  namespace        = "dynatrace"
-  create_namespace = true
-  version          = "1.4.0" # Versão estável recente no ECR
-
-  depends_on = [aws_eks_node_group.this]
-
-  # Estratégia "Não Falha": Manda instalar e libera o terminal
-  timeout = 900
-  wait    = false
-
-  # Configurações do Dynatrace
-  set {
-    name  = "apiUrl"
-    value = var.dynatrace_api_url
-  }
-
-  set_sensitive {
-    name  = "apiToken"
-    value = var.dynatrace_api_token
-  }
-
-  set {
-    name  = "cluster"
-    value = "health-flow-cluster"
-  }
-
-  set {
-    name  = "classicFullStack.enabled"
-    value = "true"
-  }
-
   # Recursos reduzidos para o Lab Academy
   set {
     name  = "oneAgent.resources.requests.cpu"

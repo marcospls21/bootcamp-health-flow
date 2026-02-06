@@ -23,4 +23,5 @@ def health():
     return "OK", 200
 
 if __name__ == "__main__":
+    # host='0.0.0.0' é OBRIGATÓRIO para funcionar no Docker/K8s
     app.run(host='0.0.0.0', port=80)
