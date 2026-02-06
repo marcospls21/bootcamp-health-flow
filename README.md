@@ -60,6 +60,13 @@ Ele provisionará a VPC, Cluster EKS, RDS e instalará o ArgoCD e o Datadog.
 
 Tempo estimado: 15 a 20 minutos.
 
+# SUBSTITUA PELA URL DO SEU REPOSITÓRIO (ex: https://github.com/seu-user/health-flow) no arquivo variables.tf
+
+Alterar as Roles do # ARNs do Academy 
+
+cluster_role_arn = "arn:aws:iam::074442581040:role/c196815a5042644l13691097t1w074442-LabEksClusterRole-z4U15qTttNJF"
+node_role_arn    = "arn:aws:iam::074442581040:role/c196815a5042644l13691097t1w074442581-LabEksNodeRole-gSRwpwgLZvgg"
+
 ------------------------------------------------------------------
 🌐 Acessando a Aplicação
 Após o sucesso do pipeline, você precisa conectar ao cluster para pegar os dados de acesso.
