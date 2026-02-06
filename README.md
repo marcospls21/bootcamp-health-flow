@@ -1,101 +1,74 @@
 # 🏥 HealthFlow - DevOps & SRE Cloud Lab
 
-O **HealthFlow** é uma plataforma de gestão de saúde digital simulada, projetada para demonstrar um ciclo de vida moderno de Engenharia de Software e Cloud. Este laboratório implementa **Infraestrutura como Código (IaC)**, **GitOps**, **Containerização**, **Orquestração** e **Observabilidade Avançada**.
+O **HealthFlow** é uma plataforma de gestão de saúde digital simulada. Este laboratório foi projetado para demonstrar um ciclo de vida moderno de Engenharia de Software e Cloud, migrando de uma mentalidade legada para **Cloud Native**.
 
-O projeto foi adaptado especificamente para rodar dentro das restrições de segurança e orçamento do ambiente **AWS Academy**.
-
----
-
-## 🏗️ Arquitetura e Infraestrutura
-
-O projeto utiliza uma arquitetura baseada em microsserviços rodando sobre Kubernetes gerenciado (EKS).
-
-### Componentes Principais:
-
-1. **Aplicação (Core):** Desenvolvida em Python (Flask), servindo interfaces web dinâmicas.
-2. **Containerização:** Docker é usado para empacotar a aplicação e suas dependências.
-3. **Orquestração (AWS EKS):** Cluster Kubernetes que gerencia a disponibilidade e escalabilidade dos pods.
-4. **GitOps (ArgoCD):** Controlador que sincroniza automaticamente o estado do cluster com o código deste repositório.
-5. **Infraestrutura (Terraform):** Provisiona VPC, Subnets, Security Groups, Cluster EKS e Node Groups de forma automatizada.
-6. **Observabilidade (Datadog):** Agente instalado via Helm Chart para coleta de métricas, logs e APM.
-7. **Pipeline (GitHub Actions):** Automação de Segurança (Trivy), Build (Docker Hub) e Deploy da Infraestrutura.
+O projeto implementa **Infraestrutura como Código (IaC)**, **GitOps**, **Containerização**, **Orquestração** e **Observabilidade Avançada**, adaptado para rodar nas restrições do **AWS Academy**.
 
 ---
 
-## 🚀 Moderno vs. Legado: Por que mudar?
+## 🏗️ Arquitetura e Componentes
 
-Este projeto demonstra a evolução do "Modelo Tradicional" para o "Modelo Cloud Native/DevOps".
+O projeto utiliza uma arquitetura de microsserviços sobre Kubernetes (EKS).
 
-| Característica | 🐢 Modelo Tradicional (Legado) | 🐇 Modelo HealthFlow (Moderno) |
+### Stack Tecnológico:
+
+1. **Aplicação (Core):** Python (Flask) servindo interfaces web dinâmicas.
+2. **Containerização:** Docker para empacotamento imutável.
+3. **Orquestração (AWS EKS):** Cluster Kubernetes gerenciado.
+4. **GitOps (ArgoCD):** Controlador que sincroniza o estado do cluster com este repositório Git.
+5. **Infraestrutura (Terraform):** Provisiona VPC, EKS, Nodes e Helm Charts.
+6. **Observabilidade (Datadog):** Monitoramento de métricas, logs e APM.
+7. **CI/CD (GitHub Actions):** Pipeline de Segurança (Trivy), Build e Deploy.
+
+---
+
+## 🚀 Comparativo: Legado vs. Moderno
+
+| Característica | 🐢 Modelo Tradicional (Legado) | 🐇 Modelo HealthFlow (SRE/DevOps) |
 | --- | --- | --- |
-| **Infraestrutura** | Servidores físicos ou VMs configuradas manualmente ("Snowflakes"). | **IaC (Terraform):** Infraestrutura descartável, versionada e reprodutível em minutos. |
-| **Deploy** | Cópia manual de arquivos (FTP/SSH), risco alto de erro humano. | **GitOps (ArgoCD):** O Cluster se auto-atualiza baseado no Git. Rollback instantâneo. |
-| **Escalabilidade** | Limitada ao hardware físico; upgrades demorados. | **Elástica (Kubernetes):** Pods e Nodes escalam horizontalmente conforme a demanda. |
-| **Monitoramento** | Reativo (alguém avisa que caiu). Logs espalhados em arquivos. | **Observabilidade (Datadog):** Proativo. Dashboards centralizados, alertas e tracing em tempo real. |
+| **Infraestrutura** | Servidores manuais ("Snowflakes"). | **IaC (Terraform):** Infra descartável e versionada. |
+| **Deploy** | Manual (FTP/SSH), alto risco. | **GitOps (ArgoCD):** O Cluster se auto-atualiza via Git. |
+| **Escalabilidade** | Limitada ao hardware físico. | **Elástica (Kubernetes):** Pods/Nodes escalam sob demanda. |
+| **Monitoramento** | Reativo (espera quebrar). | **Observabilidade (Datadog):** Proativo e centralizado. |
+| **Acesso** | VPN ou IP fixo direto na máquina. | **Load Balancer:** Distribuição de tráfego inteligente. |
 
 ---
 
-## 📋 Pré-requisitos
-
-Para rodar este laboratório, você precisará de contas ativas nas seguintes plataformas:
-
-1. **AWS Academy:** Acesso ao ambiente "Learner Lab".
-2. **GitHub:** Para hospedar este repositório e rodar as Actions.
-3. **Docker Hub:** Conta gratuita para armazenar as imagens da aplicação.
-4. **Datadog:** Conta (Trial ou Free) para obter a API Key de monitoramento.
-
----
-
-## ⚙️ Guia de Configuração (Para Clonar e Rodar)
-
-Siga esta ordem exata para configurar o ambiente.
+## ⚙️ Guia de Configuração (Passo a Passo)
 
 ### 1. Configurar o Repositório Remoto (Git)
 
-Se você clonou este projeto, a URL de origem (`origin`) ainda aponta para o repositório original. Para rodar as Actions na **sua** conta, você deve apontar para o seu próprio repositório.
+Para rodar as Actions na sua conta, aponte para o seu repositório:
 
-1. Crie um **novo repositório vazio** no seu GitHub (ex: `meu-lab-devops`).
-2. No terminal do projeto, execute:
 ```bash
-# Remove o vínculo com o repositório original
 git remote remove origin
-
-# Adiciona o seu repositório como nova origem
 git remote add origin https://github.com/SEU_USUARIO/NOME_DO_SEU_REPO.git
-
-# Garante que está na branch principal
 git branch -M main
-
-# Envia o código para o seu GitHub
 git push -u origin main
 
 ```
 
+### 2. Configurar Segredos no GitHub
 
+Em **Settings > Secrets and variables > Actions**, adicione:
 
-### 2. Configurar Segredos no GitHub (Obrigatório)
-
-Vá em **Settings > Secrets and variables > Actions** e crie as seguintes variáveis. Sem elas, o pipeline falhará.
-
-| Nome da Secret | Valor / Descrição |
+| Secret | Descrição |
 | --- | --- |
-| `AWS_ACCESS_KEY_ID` | Copie do painel AWS Academy (AWS Details). |
-| `AWS_SECRET_ACCESS_KEY` | Copie do painel AWS Academy. |
-| `AWS_SESSION_TOKEN` | Copie do painel AWS Academy (**Crucial!** As credenciais expiram a cada 4h). |
-| `DOCKER_USERNAME` | Seu usuário do Docker Hub (ex: `joaosilva`). |
-| `DOCKER_PASSWORD` | Sua senha ou Token de Acesso do Docker Hub. |
-| `TF_VAR_datadog_api_key` | Sua API Key gerada no painel do Datadog (Organization Settings > API Keys). |
+| `AWS_ACCESS_KEY_ID` | Do AWS Academy (AWS Details). |
+| `AWS_SECRET_ACCESS_KEY` | Do AWS Academy. |
+| `AWS_SESSION_TOKEN` | Do AWS Academy (**Renovar a cada 4h**). |
+| `DOCKER_USERNAME` | Seu usuário Docker Hub. |
+| `DOCKER_PASSWORD` | Senha/Token Docker Hub. |
+| `TF_VAR_datadog_api_key` | API Key do Datadog. |
 
 ### 3. Ajustar Variáveis do Terraform ⚠️ (CRUCIAL)
 
-Você precisa editar os arquivos do Terraform para que eles reconheçam a sua conta da AWS Academy e o seu repositório GitHub.
-
 #### A. Atualizar ARNs das Roles (main.tf)
 
-No AWS Academy, você deve usar roles pré-existentes e os IDs mudam a cada lab.
+Como o AWS Academy muda o ID da conta a cada lab, você deve atualizar as roles.
 
 1. No Console AWS, vá em **IAM > Roles**.
-2. Copie o ARN da `LabEksClusterRole` e da `LabEksNodeRole` (busque pelos nomes).
+2. Copie o ARN da `LabEksClusterRole` e da `LabEksNodeRole` (nomes com sufixos aleatórios).
 3. No arquivo `terraform/main.tf`, atualize o bloco `locals`:
 ```hcl
 locals {
@@ -110,175 +83,128 @@ locals {
 
 #### B. Atualizar URL do Repositório (variables.tf)
 
-O ArgoCD precisa saber onde buscar os arquivos Kubernetes. Se você não mudar isso, ele vai olhar para o repositório do criador do curso, e não para o seu.
+Para o ArgoCD sincronizar com o **seu** código:
 
-1. Abra o arquivo `terraform/variables.tf`.
-2. Encontre a variável (geralmente chamada `repo_url`).
-3. Altere o `default` para a URL do **seu** GitHub:
+1. Abra `terraform/variables.tf`.
+2. Altere a variável `repo_url`:
 ```hcl
 variable "repo_url" {
-  description = "URL do repositório Git"
-  # COLOQUE A URL DO SEU NOVO REPOSITÓRIO AQUI
-  default     = "https://github.com/SEU_USUARIO/NOME_DO_SEU_REPO"
+  default = "https://github.com/SEU_USUARIO/NOME_DO_SEU_REPO"
 }
 
 ```
 
 
 
-### 4. Ajustar a Imagem Docker no Kubernetes
+### 4. Ajustar Imagem Docker (Deployment)
 
-O arquivo de deploy do Kubernetes precisa saber qual é o **seu** repositório Docker.
+No arquivo `k8s/core/deployment.yaml`, altere a imagem para o seu usuário:
 
-1. Abra o arquivo `k8s/core/deployment.yaml`.
-2. Encontre a linha `image:`.
-3. Substitua pelo seu usuário:
 ```yaml
-# Antes:
-image: USUARIO_ANTIGO/health-core:latest
-
-# Depois (exemplo):
-image: joaosilva/health-core:latest
+image: SEU_USUARIO_DOCKER/health-core:latest
 
 ```
 
+---
 
-4. Salve e faça o commit de todas as alterações.
+## 🧪 Executando o Lab
+
+Vá na aba **Actions** do GitHub e dispare o workflow **🧪 Lab Lifecycle**.
+Ele fará todo o processo: **Security Scan > Build > Provisionamento Infra > Deploy Apps**.
 
 ---
 
-## 🧪 Executando o Laboratório (Lab Lifecycle)
+## 🌐 Acessando a Aplicação (HealthFlow)
 
-Este projeto usa um fluxo especial chamado **"Lab Lifecycle"** para economizar créditos da AWS. Ele cria, espera você usar, e destrói tudo automaticamente.
-
-1. Vá na aba **Actions** do GitHub.
-2. Selecione o workflow **🧪 Lab Lifecycle**.
-3. Clique em **Run workflow**.
-4. Escolha o tempo de duração (ex: **60 minutos**).
-5. O Pipeline fará:
-* 🛡️ Scan de segurança (Trivy).
-* 🐳 Build & Push da imagem Docker.
-* 🏗️ Provisionamento da Infra (Terraform Apply).
-* ⏳ **Pausa:** O sistema ficará "rodando" pelo tempo que você escolheu.
-* 🧨 **Auto-Destroy:** Ao final do tempo (ou se você cancelar), ele destrói tudo.
-
-
-
----
-
-## 🌐 Verificando a Aplicação
-
-Após o Terraform finalizar a criação (aprox. 15 min), siga os passos para acessar:
-
-### 1. Atualizar Credenciais Locais
-
-No seu terminal (com AWS CLI configurado):
+Após o Terraform finalizar (aprox. 15 min), atualize suas credenciais locais:
 
 ```bash
 aws eks update-kubeconfig --region us-east-1 --name health-flow-cluster
 
 ```
 
-### 2. Verificar os Pods
+### 🚨 Passo Importante: Liberar Acesso Externo (Security Group)
 
+Para que o LoadBalancer (Link Público) funcione na sua rede doméstica, você deve liberar o Firewall dos nós na AWS. **Sem isso, o site não abrirá.**
+
+1. Acesse o **Console AWS** -> **EC2**.
+2. No menu lateral esquerdo, vá em **Security Groups**.
+3. Você verá alguns grupos. Procure por um que tenha no nome algo como `eks-cluster-sg-health-flow-cluster`.
+* *Dica:* Geralmente é o Security Group que está associado às suas instâncias EC2 (Nodes). Você pode confirmar indo em Instances, clicando em um node e vendo qual Security Group ele usa na aba "Security".
+
+
+4. Selecione-o e clique na aba inferior **Inbound rules** -> **Edit inbound rules**.
+5. Adicione a seguinte regra:
+* **Type:** `All traffic` (ou HTTP/HTTPS)
+* **Source:** `Anywhere-IPv4` `0.0.0.0/0` (Qualquer lugar).
+
+
+6. Clique em **Save rules**.
+
+### Opção A: LoadBalancer (Link Público - Recomendado)
+
+Acessível de qualquer lugar. **Consome créditos da AWS.**
+
+1. **Transforme o serviço:**
 ```bash
-kubectl get pods -n health-core
+kubectl patch svc core-service -n health-core -p '{"spec": {"type": "LoadBalancer"}}'
 
 ```
 
-*Aguarde até o status estar como `Running`.*
 
----
+2. **Pegue o Link:**
+```bash
+kubectl get svc core-service -n health-core --output jsonpath='{.status.loadBalancer.ingress[0].hostname}'
 
-### 2. Acessar via Port-Forward
+```
 
-Como não criamos LoadBalancer para a aplicação Core (para economizar), usamos o túnel:
+
+3. **Acesse:** Copie o endereço (ex: `a83...elb.amazonaws.com`) e cole no navegador.
+* *Nota:* Pode levar 2-5 minutos para o link funcionar na primeira vez.
+
+
+
+### Opção B: Port-Forward (Econômica)
+
+Acessível apenas da sua máquina local. Não precisa alterar Security Group.
 
 ```bash
 kubectl port-forward svc/core-service -n health-core 9090:80
 
 ```
 
-Acesse no navegador:
-
-* **Home:** [http://localhost:9090](https://www.google.com/search?q=http://localhost:9090)
-* **Login:** [http://localhost:9090/login.html](https://www.google.com/search?q=http://localhost:9090/login.html)
+Acesse: [http://localhost:9090](https://www.google.com/search?q=http://localhost:9090)
 
 ---
 
 ## 🐙 Acessando o ArgoCD (GitOps)
 
-Para ver o "cérebro" do GitOps funcionando. Vamos gerar um endereço público para ele.
+Para visualizar o estado do Cluster:
 
-### 1. Recuperar a Senha de Admin
-
-Execute no seu terminal:
-
+1. **Senha de Admin:**
 ```bash
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
 
 ```
 
-*Copie a senha que aparecerá na tela.*
 
-### 2. Gerar Endereço Público (LoadBalancer)
-
-Por padrão o ArgoCD é interno. Vamos expô-lo para a internet:
-
+2. **Acesso (LoadBalancer):**
 ```bash
-# Transforma o serviço em LoadBalancer
 kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
-
-```
-
-### 3. Pegar o Link de Acesso
-
-Execute o comando abaixo e aguarde uns instantes até aparecer o endereço (hostname):
-
-```bash
 kubectl get svc argocd-server -n argocd --output jsonpath='{.status.loadBalancer.ingress[0].hostname}'
 
 ```
 
-* **Acesse:** Copie o endereço (ex: `xxxx.us-east-1.elb.amazonaws.com`) e cole no navegador com `https://`.
-* **Login:** Usuário `admin` e a senha do passo 1.
 
-> ⚠️ **Nota:** O LoadBalancer consome créditos da AWS enquanto estiver ativo.
+* Acesse via **HTTPS** (aceite o aviso de segurança). Usuário: `admin`.
 
-### 4. O que verificar?
 
-Dentro do painel, você verá uma aplicação chamada `health-flow-app`.
-
-* **Status Synced (Verde):** Significa que o Cluster está igual ao GitHub.
-* **Status Healthy (Coração Verde):** Significa que os pods estão rodando sem erros.
 
 ---
 
-## 📂 Estrutura do Projeto
+## ⚠️ Troubleshooting
 
-```text
-.
-├── .github/workflows/
-│   └── lab-lifecycle.yml  # Pipeline mestre (Security > Build > Deploy > Wait > Destroy)
-├── k8s/
-│   ├── core/              # Manifestos da Aplicação Principal
-│   └── video/             # Manifestos do Serviço de Vídeo (Placeholder)
-├── src/
-│   └── core-app/          # Código Fonte Python (Flask) + Dockerfile
-├── terraform/             # Código IaC
-│   ├── main.tf            # Definição do EKS, Helm Charts (Datadog/ArgoCD) e Locals das Roles
-│   ├── vpc.tf             # Rede
-│   ├── variables.tf       # Variáveis gerais (URL do Git)
-│   └── outputs.tf         # Saídas (Comandos de conexão)
-└── README.md              # Documentação
-
-```
-
----
-
-## ⚠️ Solução de Problemas Comuns
-
-* **ArgoCD "OutOfSync":** Significa que alguém mudou algo no Cluster manualmente. Clique em "Sync" no painel para corrigir.
-* **ArgoCD não sincroniza:** Verifique a variável `repo_url` no `variables.tf`.
-* **Erro `Authentication failed` no Git Push:** Troque a URL de origem para o seu repositório (**Passo 1**).
-* **Erro `403 Forbidden` no Terraform:** Suas credenciais da AWS Academy expiraram. Gere novas.
+* **Site não abre (Timeout):** Verifique se você realizou o passo de "Liberar Acesso Externo (Security Group)" acima. O firewall da AWS bloqueia conexões externas por padrão.
+* **Ping falha no LoadBalancer:** Normal. A AWS bloqueia ICMP (Ping) por padrão. Teste com `curl -Iv URL` ou no navegador.
+* **ArgoCD OutOfSync:** Se você alterou algo manualmente, o ArgoCD reclama. Clique em "Sync" para forçar o estado do Git.
+* **Erro 403 no Terraform:** Suas credenciais do AWS Academy expiraram. Gere novas no portal.
