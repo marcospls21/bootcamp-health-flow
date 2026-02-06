@@ -1,9 +1,3 @@
-Peço desculpas! Você tem toda razão. No ambiente do AWS Academy, especificamente para EKS, eles costumam separar as roles em **ClusterRole** e **NodeRole** com sufixos aleatórios, e elas precisam ser passadas explicitamente para o Terraform via `locals` (ou variáveis) pois você não tem permissão para criar roles novas.
-
-Abaixo está o **README.md** corrigido. Atualizei o **Passo 2** do Guia de Configuração para refletir exatamente essa necessidade de pegar os ARNs dessas duas roles específicas.
-
----
-
 # 🏥 HealthFlow - DevOps & SRE Cloud Lab
 
 O **HealthFlow** é uma plataforma de gestão de saúde digital simulada, projetada para demonstrar um ciclo de vida moderno de Engenharia de Software e Cloud. Este laboratório implementa **Infraestrutura como Código (IaC)**, **Containerização**, **Orquestração**, **CI/CD** e **Observabilidade Avançada**.
