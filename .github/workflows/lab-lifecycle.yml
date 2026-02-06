@@ -1,0 +1,72 @@
+name: 🧪 Lab Lifecycle (Deploy > Wait > Destroy)
+
+on:
+  workflow_dispatch:
+    inputs:
+      duration_minutes:
+        description: 'Tempo de vida do Lab (minutos):'
+        required: true
+        default: '60'
+        type: choice
+        options:
+        - '30'
+        - '60'
+        - '120'
+
+jobs:
+  lab-session:
+    name: Lab Session (Alive for ${{ github.event.inputs.duration_minutes }}m)
+    runs-on: ubuntu-latest
+    # Define um tempo máximo para o Job não ficar preso para sempre
+    timeout-minutes: 180 
+    
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      AWS_REGION: us-east-1
+      TF_VAR_datadog_api_key: ${{ secrets.TF_VAR_datadog_api_key }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Terraform Init
+        working-directory: ./terraform
+        run: terraform init -upgrade
+
+      - name: 🚀 Terraform Apply
+        working-directory: ./terraform
+        run: terraform apply -auto-approve
+
+      - name: ℹ️ Mostrar Acessos
+        working-directory: ./terraform
+        run: |
+          echo "✅ LAB PRONTO!"
+          echo "---------------------------------------------------"
+          echo "Para configurar seu kubectl local:"
+          terraform output configure_kubectl
+          echo "---------------------------------------------------"
+          echo "Senha do ArgoCD:"
+          terraform output argocd_password_command
+          echo "---------------------------------------------------"
+
+      - name: ⏳ Aguardando Uso do Lab
+        run: |
+          echo "O ambiente ficará ativo por ${{ github.event.inputs.duration_minutes }} minutos."
+          echo "Se você terminar antes, pode CANCELAR este workflow para iniciar a destruição imediata."
+          sleep $((${{ github.event.inputs.duration_minutes }} * 60))
+
+      # --- FASE DE DESTRUIÇÃO ---
+      # 'if: always()' garante que isso rode mesmo se o passo anterior der erro,
+      # timeout, ou se você clicar em "Cancel Workflow".
+      
+      - name: 🧨 Terraform Destroy (Auto-Cleanup)
+        if: always() 
+        working-directory: ./terraform
+        run: |
+          echo "Iniciando destruição automática para salvar créditos..."
+          terraform destroy -auto-approve

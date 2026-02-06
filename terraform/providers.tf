@@ -13,14 +13,6 @@ terraform {
       version = "~> 2.20"
     }
   }
-  # --- BACKEND S3 (Para salvar o estado) ---
-  backend "s3" {
-    # ATENÇÃO: Este bucket DEVE existir previamente na AWS.
-    # Dica: Use um nome único, ex: "tf-state-health-flow-SEUNOME"
-    bucket = "terraform-state-health-flow"
-    key    = "health-flow/terraform.tfstate"
-    region = "us-east-1"
-  }
 }
 
 provider "aws" {
