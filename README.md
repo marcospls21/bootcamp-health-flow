@@ -166,7 +166,7 @@ Este projeto usa um fluxo especial chamado **"Lab Lifecycle"** para economizar c
 
 ---
 
-## 🌐 Acessando a Aplicação
+## 🌐 Verificando a Aplicação
 
 Após o Terraform finalizar a criação (aprox. 15 min), siga os passos para acessar:
 
@@ -187,20 +187,6 @@ kubectl get pods -n health-core
 ```
 
 *Aguarde até o status estar como `Running`.*
-
-### 3. Acessar via Port-Forward (Recomendado)
-
-Como não usamos LoadBalancer público para economizar custos:
-
-```bash
-kubectl port-forward svc/core-service -n health-core 9090:80
-
-```
-
-Acesse no navegador:
-
-* **Home:** [http://localhost:9090](https://www.google.com/search?q=http://localhost:9090)
-* **Login:** [http://localhost:9090/login.html](https://www.google.com/search?q=http://localhost:9090/login.html)
 
 ---
 
