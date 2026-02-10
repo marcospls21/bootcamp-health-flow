@@ -13,7 +13,12 @@ on:
         - '60'
         - '120'
         - '180'
-
+        - '240'
+        - '300'
+        - '360'
+        - '420'
+        - '480'
+        
 env:
   # Credenciais AWS
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
