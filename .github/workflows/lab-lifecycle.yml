@@ -73,6 +73,13 @@ jobs:
           push: true
           tags: ${{ env.IMAGE_NAME }}
 
+      - name: Build and push Apresentacao image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./src/apresentacao
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/health-apresentacao:latest
+
       - name: Run Trivy Image Scan
         uses: aquasecurity/trivy-action@master
         with:

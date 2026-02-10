@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apresentacao-app
+  namespace: health-core  # Vamos usar o mesmo namespace do core
+  labels:
+    app: apresentacao
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: apresentacao
+  template:
+    metadata:
+      labels:
+        app: apresentacao
+    spec:
+      containers:
+      - name: apresentacao
+        # SUBSTITUA 'SEU_USUARIO' PELO SEU USER DO DOCKER HUB
+        image: marcospls/health-apresentacao:latest 
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "250m"

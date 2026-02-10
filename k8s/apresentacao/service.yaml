@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: apresentacao-service
+  namespace: health-core
+spec:
+  selector:
+    app: apresentacao
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: LoadBalancer # Deixei como LB para você testar fácil, igual fizemos com o Core

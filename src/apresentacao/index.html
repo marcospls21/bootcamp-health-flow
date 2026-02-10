@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>HealthFlow Digital - Apresentação Executiva</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700;800&family=Lato:wght@300;400;700&display=swap"
+        rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+
+    <style>
+        /* --- Configurações Globais --- */
+        body {
+            font-family: 'Lato', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #E8F4F8;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5 {
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        /* Cores da Marca */
+        .text-teal-brand {
+            color: #2C7A7B;
+        }
+
+        .bg-teal-brand {
+            background-color: #2C7A7B;
+        }
+
+        .hover-teal-bg:hover {
+            background-color: #E6FFFA;
+        }
+
+        /* Cores de Status */
+        .bg-danger-light {
+            background-color: #FFF5F5;
+        }
+
+        .border-danger {
+            border-color: #FC8181;
+        }
+
+        .text-danger {
+            color: #C53030;
+        }
+
+        /* --- SPA e Animações --- */
+        #main-stage {
+            flex: 1;
+            position: relative;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+
+        .slide-section {
+            display: none;
+            min-height: 100%;
+            width: 100%;
+            padding: 2rem;
+            box-sizing: border-box;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .slide-section.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .slide-section.content-heavy {
+            justify-content: flex-start;
+            padding-top: 4rem;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-entry {
+            animation: slideUp 0.8s ease-out forwards;
+        }
+
+        /* --- Timeline Vertical (Slide 7) --- */
+        .timeline-vertical {
+            position: relative;
+            padding-left: 2rem;
+            border-left: 4px solid #CBD5E0;
+            margin-left: 1rem;
+        }
+
+        .timeline-v-item {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .timeline-v-dot {
+            position: absolute;
+            left: -2.6rem;
+            top: 0;
+            width: 20px;
+            height: 20px;
+            background: #2C7A7B;
+            border: 4px solid white;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* --- Navegação Estilizada --- */
+        .nav-controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 50;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px 30px;
+            border-radius: 40px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(5px);
+        }
+
+        .nav-btn {
+            background-color: transparent;
+            color: #2C7A7B;
+            border: 1px solid #2C7A7B;
+            padding: 8px 24px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background-color: #2C7A7B;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(44, 122, 123, 0.3);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            border-color: #cbd5e1;
+            color: #94a3b8;
+        }
+
+        .progress-indicator {
+            font-size: 0.9rem;
+            color: #475569;
+            font-weight: 600;
+            min-width: 100px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="main-stage">
+
+        <section id="slide-0"
+            class="slide-section active items-center text-center bg-gradient-to-br from-slate-50 to-teal-50">
+            <div class="max-w-6xl mx-auto animate-entry pt-4">
+                <div class="mb-6 inline-flex p-4 bg-white rounded-full shadow-xl">
+                    <i class="fa-solid fa-heart-pulse text-5xl text-teal-brand"></i>
+                </div>
+                <h1 class="text-5xl font-extrabold text-slate-800 tracking-tight mb-2">
+                    HealthFlow <span class="text-teal-brand">Digital</span>
+                </h1>
+                <p class="text-xl text-slate-500 font-light mb-10">
+                    Modernização da Infraestrutura & Inteligência de Dados
+                </p>
+
+                <div class="bg-white p-8 rounded-2xl shadow-lg border border-slate-100 w-full mx-auto max-w-5xl">
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-6 border-b pb-2">Equipe do
+                        Projeto</h3>
+
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 text-left">
+                        <a href="https://www.linkedin.com/in/bruno-de-araujo-amorim-7a369628/" target="_blank"
+                            class="flex items-center space-x-3 p-2 rounded-lg hover-teal-bg transition border border-transparent hover:border-teal-100 group">
+                            <div
+                                class="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-xs group-hover:bg-teal-600 group-hover:text-white transition">
+                                BA</div>
+                            <span class="text-slate-700 font-semibold text-sm group-hover:text-teal-700">Bruno
+                                Amorim</span>
+                        </a>
+                        <a href="https://www.linkedin.com/in/fernando-jordao/" target="_blank"
+                            class="flex items-center space-x-3 p-2 rounded-lg hover-teal-bg transition border border-transparent hover:border-teal-100 group">
+                            <div
+                                class="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-xs group-hover:bg-teal-600 group-hover:text-white transition">
+                                FJ</div>
+                            <span class="text-slate-700 font-semibold text-sm group-hover:text-teal-700">Fernando
+                                Jordão</span>
+                        </a>
+                        <a href="https://www.linkedin.com/in/henrique-lorente-513585a1/" target="_blank"
+                            class="flex items-center space-x-3 p-2 rounded-lg hover-teal-bg transition border border-transparent hover:border-teal-100 group">
+                            <div
+                                class="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-xs group-hover:bg-teal-600 group-hover:text-white transition">
+                                HL</div>
+                            <span class="text-slate-700 font-semibold text-sm group-hover:text-teal-700">Henrique
+                                Lorente</span>
+                        </a>
+                        <a href="https://br.linkedin.com/in/ilbertojr" target="_blank"
+                            class="flex items-center space-x-3 p-2 rounded-lg hover-teal-bg transition border border-transparent hover:border-teal-100 group">
+                            <div
+                                class="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-xs group-hover:bg-teal-600 group-hover:text-white transition">
+                                IJ</div>
+                            <span class="text-slate-700 font-semibold text-sm group-hover:text-teal-700">Ilberto
+                                Junior</span>
+                        </a>
+                        <a href="https://www.linkedin.com/in/jackson-oliveira-9b9295b3/" target="_blank"
+                            class="flex items-center space-x-3 p-2 rounded-lg hover-teal-bg transition border border-transparent hover:border-teal-100 group">
+                            <div
+                                class="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-xs group-hover:bg-teal-600 group-hover:text-white transition">
+                                JG</div>
+                            <span class="text-slate-700 font-semibold text-sm group-hover:text-teal-700">Jackson
+                                Gonzaga</span>
+                        </a>
+                        <a href="https://www.linkedin.com/in/lucianosouzati/" target="_blank"
+                            class="flex items-center space-x-3 p-2 rounded-lg hover-teal-bg transition border border-transparent hover:border-teal-100 group">
+                            <div
+                                class="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-xs group-hover:bg-teal-600 group-hover:text-white transition">
+                                LJ</div>
+                            <span class="text-slate-700 font-semibold text-sm group-hover:text-teal-700">Luciano
+                                Jesus</span>
+                        </a>
+                        <a href="https://www.linkedin.com/in/marcos-souza-135951114/" target="_blank"
+                            class="flex items-center space-x-3 p-2 rounded-lg hover-teal-bg transition border border-transparent hover:border-teal-100 group">
+                            <div
+                                class="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-xs group-hover:bg-teal-600 group-hover:text-white transition">
+                                MP</div>
+                            <span class="text-slate-700 font-semibold text-sm group-hover:text-teal-700">Marcos
+                                Paulo</span>
+                        </a>
+                        <a href="https://www.linkedin.com/in/raphael-de-carvalho/" target="_blank"
+                            class="flex items-center space-x-3 p-2 rounded-lg hover-teal-bg transition border border-transparent hover:border-teal-100 group">
+                            <div
+                                class="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-xs group-hover:bg-teal-600 group-hover:text-white transition">
+                                RC</div>
+                            <span class="text-slate-700 font-semibold text-sm group-hover:text-teal-700">Raphael
+                                Carvalho</span>
+                        </a>
+                        <a href="https://www.linkedin.com/in/tiago-amianti-barbosa-835126200" target="_blank"
+                            class="flex items-center space-x-3 p-2 rounded-lg hover-teal-bg transition border border-transparent hover:border-teal-100 group">
+                            <div
+                                class="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-xs group-hover:bg-teal-600 group-hover:text-white transition">
+                                TB</div>
+                            <span class="text-slate-700 font-semibold text-sm group-hover:text-teal-700">Tiago
+                                Barbosa</span>
+                        </a>
+                        <a href="https://www.linkedin.com/in/ygor-duarte-a98941138/" target="_blank"
+                            class="flex items-center space-x-3 p-2 rounded-lg hover-teal-bg transition border border-transparent hover:border-teal-100 group">
+                            <div
+                                class="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-xs group-hover:bg-teal-600 group-hover:text-white transition">
+                                YM</div>
+                            <span class="text-slate-700 font-semibold text-sm group-hover:text-teal-700">Ygor
+                                Monteiro</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="slide-1" class="slide-section items-center">
+            <div class="max-w-5xl mx-auto w-full animate-entry px-8">
+                <h2 class="text-4xl font-extrabold text-slate-800 mb-12 text-center border-b border-slate-200 pb-4">
+                    Agenda Executiva</h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition flex items-start gap-4">
+                        <span class="text-5xl font-black text-slate-200">01</span>
+                        <div>
+                            <h4 class="text-lg font-bold text-teal-brand">Transformação Arquitetural</h4>
+                            <p class="text-slate-600 text-sm mt-2">Da infraestrutura monolítica legada para
+                                microsserviços cloud-native escaláveis e resilientes.</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition flex items-start gap-4">
+                        <span class="text-5xl font-black text-slate-200">02</span>
+                        <div>
+                            <h4 class="text-lg font-bold text-teal-brand">DevOps e Alta Disponibilidade</h4>
+                            <p class="text-slate-600 text-sm mt-2">Pipeline CI/CD automatizado, estratégias de deploy
+                                avançadas e arquitetura multi-AZ.</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition flex items-start gap-4">
+                        <span class="text-5xl font-black text-slate-200">03</span>
+                        <div>
+                            <h4 class="text-lg font-bold text-teal-brand">Segurança Zero Trust</h4>
+                            <p class="text-slate-600 text-sm mt-2">Defesa em profundidade, compliance HIPAA/LGPD e
+                                governança com blockchain.</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition flex items-start gap-4">
+                        <span class="text-5xl font-black text-slate-200">04</span>
+                        <div>
+                            <h4 class="text-lg font-bold text-teal-brand">IA Generativa + ROI</h4>
+                            <p class="text-slate-600 text-sm mt-2">Amazon Bedrock para insights clínicos e retorno de
+                                $2.5M anuais.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="slide-2" class="slide-section items-center">
+            <div class="max-w-6xl mx-auto w-full animate-entry px-8">
+                <div class="text-center mb-10">
+                    <span
+                        class="bg-red-100 text-red-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide border border-red-200">Cenário
+                        Legacy</span>
+                    <h2 class="text-4xl font-extrabold text-slate-800 mt-4">INFRAESTRUTURA FRÁGIL</h2>
+                    <h3 class="text-xl text-slate-500 mt-2">Instabilidade Crítica & Riscos Operacionais</h3>
+                </div>
+
+                <div
+                    class="bg-white p-8 rounded-2xl shadow-xl border-l-8 border-red-500 mb-10 relative overflow-hidden">
+                    <div class="absolute right-0 top-0 opacity-5 text-9xl text-red-500 -mr-10 -mt-10">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <div class="relative z-10 flex flex-col md:flex-row items-center gap-6">
+                        <div class="flex gap-4">
+                            <div class="bg-red-50 p-4 rounded-lg text-center border border-red-100">
+                                <i class="fa-solid fa-server text-3xl text-red-600 mb-2"></i>
+                                <p class="text-xs font-bold text-red-800">EC2 #1<br>Monolito</p>
+                            </div>
+                            <div class="bg-red-50 p-4 rounded-lg text-center border border-red-100">
+                                <i class="fa-solid fa-film text-3xl text-red-600 mb-2"></i>
+                                <p class="text-xs font-bold text-red-800">EC2 #2<br>Mídia</p>
+                            </div>
+                        </div>
+                        <div class="border-l border-slate-200 pl-6">
+                            <h4 class="text-2xl font-bold text-slate-800 mb-2">Ambiente Não-Redundante</h4>
+                            <p class="text-slate-600 leading-relaxed text-lg">
+                                Infraestrutura limitada a <strong>2 instâncias isoladas</strong>.
+                                <br>
+                                <strong class="text-red-600">Disponibilidade de 97%</strong> = 6h de downtime mensal
+                                impactando pacientes.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="bg-white p-5 rounded-xl shadow-md border-t-4 border-red-400 hover:shadow-lg transition">
+                        <div class="mb-3 text-red-500 text-2xl"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+                        <h5 class="font-bold text-slate-800 mb-2">Configuração 100% Manual</h5>
+                        <p class="text-xs text-slate-500">Sem automação. Processo "ClickOps" lento e sujeito a erros
+                            humanos graves.</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl shadow-md border-t-4 border-red-400 hover:shadow-lg transition">
+                        <div class="mb-3 text-red-500 text-2xl"><i class="fa-solid fa-link-slash"></i></div>
+                        <h5 class="font-bold text-slate-800 mb-2">Ponto Único de Falha</h5>
+                        <p class="text-xs text-slate-500">Sem redundância. Se o monolito ou servidor de vídeo cair, o
+                            serviço para totalmente.</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl shadow-md border-t-4 border-red-400 hover:shadow-lg transition">
+                        <div class="mb-3 text-red-500 text-2xl"><i class="fa-solid fa-arrow-up-right-dots"></i></div>
+                        <h5 class="font-bold text-slate-800 mb-2">Dependência de Escala Vertical</h5>
+                        <p class="text-xs text-slate-500">Impossível escalar horizontalmente. Aumentar recursos exige
+                            desligar o servidor (downtime).</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl shadow-md border-t-4 border-red-400 hover:shadow-lg transition">
+                        <div class="mb-3 text-red-500 text-2xl"><i class="fa-solid fa-map-location-dot"></i></div>
+                        <h5 class="font-bold text-slate-800 mb-2">Single AZ & Sem Failover</h5>
+                        <p class="text-xs text-slate-500">Sem Multi-AZ. Vulnerabilidade total a falhas de zona da AWS.
+                            Sem recuperação automática.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="slide-3" class="slide-section items-center">
+            <div class="max-w-6xl mx-auto w-full animate-entry px-8">
+                <div class="text-center mb-12">
+                    <span
+                        class="bg-teal-100 text-teal-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">Modernização</span>
+                    <h2 class="text-4xl font-extrabold text-slate-800 mt-4">ARQUITETURA MODERNA</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div
+                        class="bg-white p-8 rounded-xl shadow-sm border-t-4 border-teal-brand hover:shadow-lg transition">
+                        <div class="flex items-center gap-3 mb-4">
+                            <img src="https://icon.icepanel.io/AWS/svg/Compute/Elastic-Kubernetes-Service.svg"
+                                class="w-10 h-10" onerror="this.src='https://img.icons8.com/color/48/kubernetes.png'"
+                                alt="EKS">
+                            <h3 class="text-xl font-bold text-slate-800">Amazon EKS - Multi-AZ</h3>
+                        </div>
+                        <p class="text-slate-600">Orquestração Kubernetes gerenciada em três zonas de disponibilidade,
+                            garantindo resiliência e recuperação automática de falhas sem intervenção manual.</p>
+                    </div>
+
+                    <div
+                        class="bg-white p-8 rounded-xl shadow-sm border-t-4 border-teal-brand hover:shadow-lg transition">
+                        <div class="flex items-center gap-3 mb-4">
+                            <i class="fa-solid fa-cubes text-3xl text-teal-brand"></i>
+                            <h3 class="text-xl font-bold text-slate-800">Microsserviços Desacoplados</h3>
+                        </div>
+                        <p class="text-slate-600">Aplicações divididas em serviços independentes, permitindo
+                            desenvolvimento paralelo, deploys isolados e falhas contidas por domínio de negócio.</p>
+                    </div>
+
+                    <div
+                        class="bg-white p-8 rounded-xl shadow-sm border-t-4 border-teal-brand hover:shadow-lg transition">
+                        <div class="flex items-center gap-3 mb-4">
+                            <img src="https://icon.icepanel.io/AWS/svg/Management-Governance/Auto-Scaling.svg"
+                                class="w-10 h-10" onerror="this.src='https://img.icons8.com/color/48/graph.png'"
+                                alt="Auto Scaling">
+                            <h3 class="text-xl font-bold text-slate-800">Auto Scaling Inteligente</h3>
+                        </div>
+                        <p class="text-slate-600">Dimensionamento automático baseado em métricas de CPU, memória e
+                            latência, otimizando custos e garantindo performance em picos de utilização.</p>
+                    </div>
+
+                    <div
+                        class="bg-white p-8 rounded-xl shadow-sm border-t-4 border-teal-brand hover:shadow-lg transition">
+                        <div class="flex items-center gap-3 mb-4">
+                            <img src="https://icon.icepanel.io/AWS/svg/Networking-Content-Delivery/Elastic-Load-Balancing.svg"
+                                class="w-10 h-10" onerror="this.src='https://img.icons8.com/color/48/network.png'"
+                                alt="ELB">
+                            <h3 class="text-xl font-bold text-slate-800">Alta Disponibilidade</h3>
+                        </div>
+                        <p class="text-slate-600">Arquitetura distribuída com balanceamento de carga, health checks
+                            contínuos e failover automático para garantir <strong>99.95% de uptime operacional</strong>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="slide-4" class="slide-section items-center justify-center bg-slate-100">
+            <div class="w-full max-w-[1000px] p-4 text-center">
+                <h2 class="text-2xl font-bold text-slate-700 mb-8">Arquitetura Técnica (Demonstração)</h2>
+                <div class="w-full max-w-4xl mx-auto bg-white p-4 rounded-2xl shadow-xl">
+                    <video class="w-full rounded-xl border border-slate-200" autoplay loop muted playsinline controls>
+                        <source src="./arquitetura.mp4" type="video/mp4">
+                        Seu navegador não suporta a tag de vídeo.
+                    </video>
+                </div>
+            </div>
+        </section>
+
+        <section id="slide-5" class="slide-section content-heavy">
+            <div class="max-w-6xl mx-auto w-full animate-entry pb-20 px-8">
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl font-extrabold text-slate-800">Pipeline CI/CD: Automação de Ponta a Ponta</h2>
+                    <p class="text-slate-500 mt-2">Pipeline totalmente automatizado com foco em segurança, qualidade e
+                        velocidade.</p>
+                </div>
+
+                <div class="flex flex-wrap justify-center items-center gap-4 mb-12 bg-white p-6 rounded-xl shadow-sm">
+                    <div class="flex flex-col items-center">
+                        <i class="fa-brands fa-github text-4xl text-slate-800"></i>
+                        <span class="text-xs font-bold mt-2">Github</span>
+                    </div>
+                    <i class="fa-solid fa-arrow-right text-slate-300"></i>
+                    <div class="flex flex-col items-center">
+                        <i class="fa-solid fa-magnifying-glass-chart text-4xl text-blue-500"></i>
+                        <span class="text-xs font-bold mt-2">Trivy</span>
+                    </div>
+                    <i class="fa-solid fa-arrow-right text-slate-300"></i>
+                    <div class="flex flex-col items-center">
+                        <img src="https://icon.icepanel.io/AWS/svg/Containers/Elastic-Container-Registry.svg"
+                            class="w-10 h-10" onerror="this.src='https://img.icons8.com/color/48/docker.png'" alt="ECR">
+                        <span class="text-xs font-bold mt-2">ECR</span>
+                    </div>
+                    <i class="fa-solid fa-arrow-right text-slate-300"></i>
+                    <div class="flex flex-col items-center">
+                        <i class="fa-solid fa-octopus-deploy text-4xl text-purple-600"></i>
+                        <span class="text-xs font-bold mt-2">ArgoCD</span>
+                    </div>
+                    <i class="fa-solid fa-arrow-right text-slate-300"></i>
+                    <div class="flex flex-col items-center">
+                        <img src="https://icon.icepanel.io/AWS/svg/Compute/Elastic-Kubernetes-Service.svg"
+                            class="w-10 h-10" onerror="this.src='https://img.icons8.com/color/48/kubernetes.png'"
+                            alt="EKS">
+                        <span class="text-xs font-bold mt-2">EKS</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-500">
+                        <h4 class="font-bold text-slate-700">Build Automatizado</h4>
+                        <p class="text-xs text-slate-600">Compilação e empacotamento em containers Docker otimizados.
+                        </p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-green-500">
+                        <h4 class="font-bold text-slate-700">Testes Contínuos</h4>
+                        <p class="text-xs text-slate-600">Suíte automatizada de testes unitários e integração.</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-red-500">
+                        <h4 class="font-bold text-slate-700">Security Scan</h4>
+                        <p class="text-xs text-slate-600">Trivy detecta vulnerabilidades CVE antes do deploy.</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-purple-500">
+                        <h4 class="font-bold text-slate-700">GitOps (ArgoCD)</h4>
+                        <p class="text-xs text-slate-600">Estado desejado versionado, rollback instantâneo.</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-orange-500">
+                        <h4 class="font-bold text-slate-700">Canary Releases</h4>
+                        <p class="text-xs text-slate-600">Deploy progressivo com validação de métricas.</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-teal-500">
+                        <h4 class="font-bold text-slate-700">Zero Downtime</h4>
+                        <p class="text-xs text-slate-600">Rolling updates sem interrupção de serviço.</p>
+                    </div>
+                </div>
+
+                <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-slate-800 text-white p-6 rounded-xl">
+                        <h4 class="font-bold mb-2">Velocidade de Entrega</h4>
+                        <p class="text-sm opacity-80">De 2 deploys/mês para <strong>20 deploys/semana</strong>.</p>
+                    </div>
+                    <div class="bg-slate-800 text-white p-6 rounded-xl">
+                        <h4 class="font-bold mb-2">Infraestrutura como Código</h4>
+                        <p class="text-sm opacity-80">Terraform gerencia toda a infraestrutura.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="slide-6" class="slide-section content-heavy">
+            <div class="max-w-4xl mx-auto w-full animate-entry pb-20 px-8">
+                <h2 class="text-3xl font-extrabold text-slate-800 mb-10 text-center">Segurança em Camadas: Modelo Zero
+                    Trust</h2>
+
+                <div class="timeline-vertical">
+                    <div class="timeline-v-item">
+                        <div class="timeline-v-dot"></div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                            <h4 class="text-lg font-bold text-slate-800">Perímetro</h4>
+                            <p class="text-sm text-teal-600 font-bold">AWS WAF + CloudFront</p>
+                            <p class="text-slate-600 text-sm">Proteção contra ataques web e DDoS.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-v-item">
+                        <div class="timeline-v-dot"></div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                            <h4 class="text-lg font-bold text-slate-800">Identidade</h4>
+                            <p class="text-sm text-teal-600 font-bold">IAM Roles (IRSA)</p>
+                            <p class="text-slate-600 text-sm">Privilégio mínimo para cada container.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-v-item">
+                        <div class="timeline-v-dot"></div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                            <h4 class="text-lg font-bold text-slate-800">Detecção</h4>
+                            <p class="text-sm text-teal-600 font-bold">GuardDuty</p>
+                            <p class="text-slate-600 text-sm">Monitoramento inteligente de ameaças.</p>
+                        </div>
+                    </div>
+                    <div class="timeline-v-item">
+                        <div class="timeline-v-dot"></div>
+                        <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                            <h4 class="text-lg font-bold text-slate-800">Compliance</h4>
+                            <p class="text-sm text-teal-600 font-bold">Managed Blockchain</p>
+                            <p class="text-slate-600 text-sm">Auditoria de acessos via ledger.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4 mt-8 text-center">
+                    <div class="bg-teal-600 text-white p-4 rounded-lg">
+                        <h3 class="text-2xl font-bold">0</h3>
+                        <p class="text-xs">Incidentes de Segurança</p>
+                    </div>
+                    <div class="bg-teal-600 text-white p-4 rounded-lg">
+                        <h3 class="text-2xl font-bold">70%</h3>
+                        <p class="text-xs">Redução Tempo Auditoria</p>
+                    </div>
+                    <div class="bg-teal-600 text-white p-4 rounded-lg">
+                        <h3 class="text-2xl font-bold">100%</h3>
+                        <p class="text-xs">Criptografia TLS + KMS</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="slide-7" class="slide-section content-heavy">
+            <div class="max-w-6xl mx-auto w-full animate-entry pb-20 px-8">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-extrabold text-slate-800">IA GENERATIVA</h2>
+                    <h3 class="text-xl text-teal-600 mt-2">Amazon Bedrock: Inteligência Clínica Aumentada</h3>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-md mb-8 border-l-4 border-teal-500">
+                    <p class="text-slate-700 italic">"A integração com Amazon Bedrock transformou a análise de
+                        prontuários médicos."</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                    <div class="space-y-4">
+                        <h4 class="font-bold text-slate-800 border-b pb-2">Casos de Uso</h4>
+                        <div class="flex items-start gap-3"><i class="fa-solid fa-file-medical text-teal-600 mt-1"></i>
+                            <div><strong class="text-sm block">Resumo Automático</strong><span
+                                    class="text-xs text-slate-600">Sumarização de prontuários.</span></div>
+                        </div>
+                        <div class="flex items-start gap-3"><i class="fa-solid fa-pills text-teal-600 mt-1"></i>
+                            <div><strong class="text-sm block">Interação Medicamentosa</strong><span
+                                    class="text-xs text-slate-600">Alertas em tempo real.</span></div>
+                        </div>
+                        <div class="flex items-start gap-3"><i
+                                class="fa-solid fa-magnifying-glass text-teal-600 mt-1"></i>
+                            <div><strong class="text-sm block">Busca Semântica</strong><span
+                                    class="text-xs text-slate-600">Pesquisa em base de conhecimento.</span></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                        <h4 class="font-bold text-slate-800 mb-6 text-center">Fluxo de Dados</h4>
+                        <div class="flex flex-col gap-4 items-center">
+                            <div class="bg-white border border-slate-300 p-3 rounded shadow-sm w-full text-center"><i
+                                    class="fa-brands fa-aws text-orange-500 mr-2"></i><span class="font-bold text-sm">S3
+                                    Medical Records</span></div>
+                            <i class="fa-solid fa-arrow-down text-slate-300"></i>
+                            <div class="bg-white border border-slate-300 p-3 rounded shadow-sm w-full text-center"><i
+                                    class="fa-brands fa-aws text-orange-500 mr-2"></i><span
+                                    class="font-bold text-sm">Lambda</span></div>
+                            <i class="fa-solid fa-arrow-down text-slate-300"></i>
+                            <div class="grid grid-cols-2 gap-4 w-full">
+                                <div class="bg-white border border-slate-300 p-3 rounded shadow-sm text-center"><span
+                                        class="font-bold text-sm">Bedrock (LLM)</span></div>
+                                <div class="bg-white border border-slate-300 p-3 rounded shadow-sm text-center"><span
+                                        class="font-bold text-sm">OpenSearch</span></div>
+                            </div>
+                            <i class="fa-solid fa-arrow-down text-slate-300"></i>
+                            <div class="bg-teal-600 text-white p-3 rounded shadow-sm w-full text-center"><span
+                                    class="font-bold text-sm">Dashboard</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="slide-8" class="slide-section content-heavy">
+            <div class="max-w-6xl mx-auto w-full animate-entry pb-20 px-8">
+                <div class="text-center mb-10">
+                    <span
+                        class="bg-teal-100 text-teal-800 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide border border-teal-200">FinOps</span>
+                    <h2 class="text-3xl font-extrabold text-slate-800 mt-4">GOVERNANÇA FINANCEIRA CONTÍNUA</h2>
+                    <p class="text-slate-500 mt-2">Controle de custos, previsibilidade e maximização de valor — sem
+                        abrir mão de disponibilidade, segurança e compliance.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Coluna 1: KPI + Gráfico -->
+                    <div class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Custo Mensal
+                                    </h4>
+                                    <i class="fa-solid fa-dollar-sign text-teal-brand"></i>
+                                </div>
+                                <p class="text-2xl font-extrabold text-slate-800 mt-2">$443</p>
+                                <p class="text-xs text-slate-500">≈ R$ 2.321 (US-East-1)</p>
+                            </div>
+                            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Infra vs
+                                        Squad</h4>
+                                    <i class="fa-solid fa-scale-balanced text-teal-brand"></i>
+                                </div>
+                                <p class="text-2xl font-extrabold text-slate-800 mt-2">1,88%</p>
+                                <p class="text-xs text-slate-500">Infra é &lt; 2% do custo total</p>
+                            </div>
+                            <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
+                                <div class="flex items-center justify-between">
+                                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Economia
+                                        Potencial</h4>
+                                    <i class="fa-solid fa-chart-line text-teal-brand"></i>
+                                </div>
+                                <p class="text-2xl font-extrabold text-slate-800 mt-2">11–35%</p>
+                                <p class="text-xs text-slate-500">Cenários conservador → agressivo</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-2xl shadow-md border border-slate-100">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="font-bold text-slate-800">Cenários de Otimização</h4>
+                                <span
+                                    class="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-full">Custo/mês
+                                    (USD)</span>
+                            </div>
+                            <div class="h-56">
+                                <canvas id="finopsChart"></canvas>
+                            </div>
+                            <p class="text-xs text-slate-500 mt-4">
+                                Observação: cenário “Agressivo” (1 NAT) é recomendado apenas para
+                                <strong>dev/homologação</strong>.
+                            </p>
+                        </div>
+
+                        <div class="bg-slate-800 text-white p-6 rounded-2xl">
+                            <h4 class="font-bold mb-2">Ciclo Contínuo FinOps</h4>
+                            <div class="grid grid-cols-5 gap-2 text-center text-xs mt-4">
+                                <div class="bg-white/10 p-3 rounded-lg">Planejar<br><span
+                                        class="opacity-70">Estimativa</span></div>
+                                <div class="bg-white/10 p-3 rounded-lg">Executar<br><span class="opacity-70">IaC +
+                                        Budgets</span></div>
+                                <div class="bg-white/10 p-3 rounded-lg">Medir<br><span class="opacity-70">KPIs</span>
+                                </div>
+                                <div class="bg-white/10 p-3 rounded-lg">Otimizar<br><span
+                                        class="opacity-70">Savings/RS</span></div>
+                                <div class="bg-white/10 p-3 rounded-lg">Revisar<br><span class="opacity-70">Por
+                                        Sprint</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Coluna 2: Recomendações -->
+                    <div class="space-y-6">
+                        <div class="bg-white p-6 rounded-2xl shadow-md border-l-4 border-teal-500">
+                            <h4 class="font-bold text-slate-800 mb-4">1) Governança & Visibilidade (Showback)</h4>
+                            <ul class="space-y-2 text-sm text-slate-600">
+                                <li class="flex gap-3"><i
+                                        class="fa-solid fa-tag text-teal-600 mt-1"></i><span><strong>Tagging
+                                            obrigatório</strong> (Service, Environment, Squad, CostCenter, Owner,
+                                        Criticality).</span></li>
+                                <li class="flex gap-3"><i
+                                        class="fa-solid fa-chart-pie text-teal-600 mt-1"></i><span>Relatórios mensais
+                                        por <strong>microsserviço</strong> e <strong>squad</strong> (AWS Cost
+                                        Explorer).</span></li>
+                                <li class="flex gap-3"><i
+                                        class="fa-solid fa-bullseye text-teal-600 mt-1"></i><span>Responsabilização:
+                                        decisões técnicas baseadas no impacto financeiro real.</span></li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-2xl shadow-md border-l-4 border-blue-500">
+                            <h4 class="font-bold text-slate-800 mb-4">2) Estratégia por Ambiente</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                                <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl">
+                                    <p class="font-bold text-slate-700 mb-1">Dev</p>
+                                    <p class="text-slate-600">Spot, NAT único, desligamento fora do horário.</p>
+                                </div>
+                                <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl">
+                                    <p class="font-bold text-slate-700 mb-1">Homolog</p>
+                                    <p class="text-slate-600">Budgets rígidos, limites e escala controlada.</p>
+                                </div>
+                                <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl">
+                                    <p class="font-bold text-slate-700 mb-1">Produção</p>
+                                    <p class="text-slate-600">Multi-AZ, Savings Plans, right sizing contínuo.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-2xl shadow-md border-l-4 border-purple-500">
+                            <h4 class="font-bold text-slate-800 mb-4">3) Otimizações Prioritárias</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="flex gap-3">
+                                    <i class="fa-solid fa-route text-purple-600 mt-1"></i>
+                                    <div>
+                                        <p class="font-bold text-slate-700 text-sm">Rede</p>
+                                        <p class="text-xs text-slate-600">VPC Endpoints (S3/ECR) para reduzir custos do
+                                            NAT.</p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-3">
+                                    <i class="fa-solid fa-server text-purple-600 mt-1"></i>
+                                    <div>
+                                        <p class="font-bold text-slate-700 text-sm">Compute</p>
+                                        <p class="text-xs text-slate-600">HPA + Cluster Autoscaler + Savings Plans/Spot
+                                            conforme criticidade.</p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-3">
+                                    <i class="fa-solid fa-file-lines text-purple-600 mt-1"></i>
+                                    <div>
+                                        <p class="font-bold text-slate-700 text-sm">Logs</p>
+                                        <p class="text-xs text-slate-600">Retenção 30–90d (prod) e 7–14d (dev/homolog).
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="flex gap-3">
+                                    <i class="fa-solid fa-code-branch text-purple-600 mt-1"></i>
+                                    <div>
+                                        <p class="font-bold text-slate-700 text-sm">FinOps as Code</p>
+                                        <p class="text-xs text-slate-600">Infracost no CI/CD, bloqueio sem tags e
+                                            alertas de budget.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-teal-600 text-white p-6 rounded-2xl shadow-lg">
+                            <h4 class="font-bold mb-2">KPIs Orientados ao Negócio</h4>
+                            <div class="grid grid-cols-2 gap-2 text-xs mt-4">
+                                <div class="bg-white/10 p-3 rounded-lg">Custo por microsserviço</div>
+                                <div class="bg-white/10 p-3 rounded-lg">Custo por sprint</div>
+                                <div class="bg-white/10 p-3 rounded-lg">Custo por transação/paciente</div>
+                                <div class="bg-white/10 p-3 rounded-lg">% infra sobre custo total</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="slide-9" class="slide-section items-center justify-center">
+            <div class="max-w-6xl w-full animate-entry px-4">
+                <div class="text-center mb-10">
+                    <h2 class="text-4xl font-extrabold text-slate-800">Roadmap</h2>
+                    <p class="mt-3 text-slate-600 text-lg">
+                        Plano de execução (0–12 meses) • <span class="font-semibold text-slate-700">Fatiamento por
+                            valor:</span>
+                        estabilizar core → habilitar IA → escalar global
+                    </p>
+                </div>
+
+                <!-- Timeline -->
+                <div class="relative flex justify-between items-center px-6 md:px-10 mb-10">
+                    <div class="absolute left-6 right-6 md:left-10 md:right-10 top-1/2 h-1 bg-slate-200 -z-10"></div>
+
+                    <div class="group relative text-center">
+                        <div
+                            class="w-9 h-9 bg-teal-500 rounded-full border-4 border-white shadow-lg mx-auto group-hover:scale-125 transition">
+                        </div>
+                        <div class="mt-4">
+                            <h4 class="font-bold text-slate-800">0–3 meses</h4>
+                            <p class="text-xs text-slate-500">Migração Core</p>
+                        </div>
+                    </div>
+
+                    <div class="group relative text-center">
+                        <div
+                            class="w-9 h-9 bg-blue-500 rounded-full border-4 border-white shadow-lg mx-auto group-hover:scale-125 transition">
+                        </div>
+                        <div class="mt-4">
+                            <h4 class="font-bold text-slate-800">3–6 meses</h4>
+                            <p class="text-xs text-slate-500">Dados & IA</p>
+                        </div>
+                    </div>
+
+                    <div class="group relative text-center">
+                        <div
+                            class="w-9 h-9 bg-purple-500 rounded-full border-4 border-white shadow-lg mx-auto group-hover:scale-125 transition">
+                        </div>
+                        <div class="mt-4">
+                            <h4 class="font-bold text-slate-800">6–12 meses</h4>
+                            <p class="text-xs text-slate-500">Escala</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phases -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- 0-3 -->
+                    <div
+                        class="bg-white/90 backdrop-blur rounded-2xl shadow-xl border border-slate-100 p-6 text-left hover:shadow-2xl transition">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <p class="text-xs font-semibold tracking-wide text-teal-700 uppercase">0–3 meses</p>
+                                <h3 class="text-xl font-extrabold text-slate-800">Migração Core</h3>
+                            </div>
+                            <span
+                                class="px-3 py-1 rounded-full text-xs font-semibold bg-teal-50 text-teal-700 border border-teal-100">Estabilizar</span>
+                        </div>
+                        <ul class="space-y-2 text-slate-700 text-sm leading-relaxed">
+                            <li class="flex gap-2"><span
+                                    class="mt-1 w-2 h-2 rounded-full bg-teal-400 flex-shrink-0"></span>Landing Zone +
+                                rede</li>
+                            <li class="flex gap-2"><span
+                                    class="mt-1 w-2 h-2 rounded-full bg-teal-400 flex-shrink-0"></span>EKS + ECR +
+                                GitOps</li>
+                            <li class="flex gap-2"><span
+                                    class="mt-1 w-2 h-2 rounded-full bg-teal-400 flex-shrink-0"></span>Observabilidade
+                                base</li>
+                            <li class="flex gap-2"><span
+                                    class="mt-1 w-2 h-2 rounded-full bg-teal-400 flex-shrink-0"></span>SLO + rollback
+                                testado</li>
+                        </ul>
+                        <div class="mt-5 p-4 rounded-xl bg-slate-50 border border-slate-100">
+                            <p class="text-xs font-bold text-slate-700 mb-1">Sucesso</p>
+                            <p class="text-sm text-slate-700">Deploy padronizado + HA em produção</p>
+                        </div>
+                    </div>
+
+                    <!-- 3-6 -->
+                    <div
+                        class="bg-white/90 backdrop-blur rounded-2xl shadow-xl border border-slate-100 p-6 text-left hover:shadow-2xl transition">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <p class="text-xs font-semibold tracking-wide text-blue-700 uppercase">3–6 meses</p>
+                                <h3 class="text-xl font-extrabold text-slate-800">Dados & IA</h3>
+                            </div>
+                            <span
+                                class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-100">Habilitar
+                                IA</span>
+                        </div>
+                        <ul class="space-y-2 text-slate-700 text-sm leading-relaxed">
+                            <li class="flex gap-2"><span
+                                    class="mt-1 w-2 h-2 rounded-full bg-blue-400 flex-shrink-0"></span>Pipeline de dados
+                                (S3)</li>
+                            <li class="flex gap-2"><span
+                                    class="mt-1 w-2 h-2 rounded-full bg-blue-400 flex-shrink-0"></span>OpenSearch
+                                (busca)</li>
+                            <li class="flex gap-2"><span
+                                    class="mt-1 w-2 h-2 rounded-full bg-blue-400 flex-shrink-0"></span>Bedrock (GenAI)
+                            </li>
+                            <li class="flex gap-2"><span
+                                    class="mt-1 w-2 h-2 rounded-full bg-blue-400 flex-shrink-0"></span>Governança e
+                                auditoria</li>
+                        </ul>
+                        <div class="mt-5 p-4 rounded-xl bg-slate-50 border border-slate-100">
+                            <p class="text-xs font-bold text-slate-700 mb-1">Sucesso</p>
+                            <p class="text-sm text-slate-700">Redução de tempo de análise/triagem</p>
+                        </div>
+                    </div>
+
+                    <!-- 6-12 -->
+                    <div
+                        class="bg-white/90 backdrop-blur rounded-2xl shadow-xl border border-slate-100 p-6 text-left hover:shadow-2xl transition">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <p class="text-xs font-semibold tracking-wide text-purple-700 uppercase">6–12 meses</p>
+                                <h3 class="text-xl font-extrabold text-slate-800">Escala</h3>
+                            </div>
+                            <span
+                                class="px-3 py-1 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-100">Escalar</span>
+                        </div>
+                        <ul class="space-y-2 text-slate-700 text-sm leading-relaxed">
+                            <li class="flex gap-2"><span
+                                    class="mt-1 w-2 h-2 rounded-full bg-purple-400 flex-shrink-0"></span>Otimizações
+                                FinOps</li>
+                            <li class="flex gap-2"><span
+                                    class="mt-1 w-2 h-2 rounded-full bg-purple-400 flex-shrink-0"></span>Resiliência (DR
+                                tests)</li>
+                            <li class="flex gap-2"><span
+                                    class="mt-1 w-2 h-2 rounded-full bg-purple-400 flex-shrink-0"></span>Multi-região
+                                (se necessário)</li>
+                            <li class="flex gap-2"><span
+                                    class="mt-1 w-2 h-2 rounded-full bg-purple-400 flex-shrink-0"></span>Melhoria
+                                contínua SRE</li>
+                        </ul>
+                        <div class="mt-5 p-4 rounded-xl bg-slate-50 border border-slate-100">
+                            <p class="text-xs font-bold text-slate-700 mb-1">Sucesso</p>
+                            <p class="text-sm text-slate-700">RTO/RPO + custos previsíveis</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <div class="nav-controls">
+        <button id="btnPrev" class="nav-btn">
+            <i class="fa-solid fa-arrow-left mr-2"></i> Anterior
+        </button>
+        <div class="progress-indicator">Slide <span id="currentSlideNum">1</span> de 10</div>
+        <button id="btnNext" class="nav-btn">
+            Próximo <i class="fa-solid fa-arrow-right ml-2"></i>
+        </button>
+    </div>
+
+    <script>
+        const slides = document.querySelectorAll('.slide-section');
+        const btnPrev = document.getElementById('btnPrev');
+        const btnNext = document.getElementById('btnNext');
+        const currentSlideNum = document.getElementById('currentSlideNum');
+        let currentIdx = 0;
+
+
+        let finopsChartInstance = null;
+
+        function initFinopsSlide() {
+            const canvas = document.getElementById('finopsChart');
+            if (!canvas || finopsChartInstance) return;
+
+            const ctx = canvas.getContext('2d');
+            finopsChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Atual', 'Conservador', 'Moderado', 'Agressivo'],
+                    datasets: [{
+                        label: 'USD / mês',
+                        data: [443, 394, 359, 289],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+
+        function showSlide(idx) {
+            slides.forEach((slide, i) => {
+                slide.classList.remove('active');
+                if (i === idx) {
+                    slide.classList.add('active');
+                }
+            });
+            currentSlideNum.textContent = idx + 1;
+            btnPrev.disabled = idx === 0;
+            btnNext.disabled = idx === slides.length - 1;
+            currentIdx = idx;
+
+            // Inicializações específicas por slide
+            if (idx === 8) initFinopsSlide();
+        }
+
+
+        btnPrev.addEventListener('click', () => { if (currentIdx > 0) showSlide(currentIdx - 1); });
+        btnNext.addEventListener('click', () => { if (currentIdx < slides.length - 1) showSlide(currentIdx + 1); });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' && currentIdx < slides.length - 1) showSlide(currentIdx + 1);
+            if (e.key === 'ArrowLeft' && currentIdx > 0) showSlide(currentIdx - 1);
+        });
+
+        showSlide(0);
+    </script>
+</body>
+
+</html>
