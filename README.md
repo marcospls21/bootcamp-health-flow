@@ -1,14 +1,3 @@
-Com certeza! Abaixo está o **README.md** atualizado.
-
-Fiz as seguintes alterações para refletir a nova estrutura:
-
-1. **Componentes:** Adicionei o serviço de "Apresentação" na lista.
-2. **Estrutura de Pastas:** Atualizei a árvore de diretórios para incluir `src/apresentacao` e `k8s/apresentacao`.
-3. **Configuração do ArgoCD:** Adicionei a seção explicando como subir as duas aplicações de uma vez (Padrão *App of Apps*).
-4. **Acesso:** Criei uma seção dedicada para pegar o link da Apresentação.
-
----
-
 # 🏥 HealthFlow - DevOps & SRE Cloud Lab
 
 O **HealthFlow** é uma plataforma de gestão de saúde digital simulada. Este laboratório demonstra um ciclo de vida moderno de Engenharia de Software e Cloud, migrando de uma mentalidade legada para **Cloud Native**.
