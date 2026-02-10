@@ -8,7 +8,7 @@ COPY index.html /usr/share/nginx/html/index.html
 
 # --- ADICIONE ESTA LINHA ---
 # Copia o arquivo de vídeo para a mesma pasta pública do Nginx
-COPY video.mp4 /usr/share/nginx/html/video.mp4
+COPY arquitetura.mp4 /usr/share/nginx/html/arquitetura.mp4
 # ---------------------------
 
 EXPOSE 80
