@@ -1,14 +1,15 @@
-# src/apresentacao/Dockerfile
 FROM nginx:alpine
 
 # Remove a página padrão do Nginx
 RUN rm -rf /usr/share/nginx/html/*
 
-# Copia o seu index.html para o diretório do Nginx
+# Copia o index.html
 COPY index.html /usr/share/nginx/html/index.html
 
-# Expõe a porta 80
-EXPOSE 80
+# --- ADICIONE ESTA LINHA ---
+# Copia o arquivo de vídeo para a mesma pasta pública do Nginx
+COPY video.mp4 /usr/share/nginx/html/video.mp4
+# ---------------------------
 
-# Inicia o Nginx
+EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]

@@ -1,8 +1,8 @@
 # 🏥 HealthFlow - DevOps & SRE Cloud Lab
 
-O **HealthFlow** é uma plataforma de gestão de saúde digital simulada. Este laboratório foi projetado para demonstrar um ciclo de vida moderno de Engenharia de Software e Cloud, migrando de uma mentalidade legada para **Cloud Native**.
+O **HealthFlow** é uma plataforma de gestão de saúde digital simulada. Este laboratório demonstra um ciclo de vida moderno de Engenharia de Software e Cloud, migrando de uma mentalidade legada para **Cloud Native**.
 
-O projeto implementa **Infraestrutura como Código (IaC)**, **GitOps**, **Containerização**, **Orquestração** e **Observabilidade Avançada**, adaptado para rodar nas restrições do **AWS Academy**.
+O projeto implementa **Infraestrutura como Código (IaC)**, **GitOps**, **Containerização**, **Orquestração** e **Observabilidade Avançada**, rodando nas restrições do **AWS Academy**.
 
 ---
 
@@ -10,27 +10,18 @@ O projeto implementa **Infraestrutura como Código (IaC)**, **GitOps**, **Contai
 
 O projeto utiliza uma arquitetura de microsserviços sobre Kubernetes (EKS).
 
-### Stack Tecnológico:
+### Microserviços:
 
-1. **Aplicação (Core):** Python (Flask) servindo interfaces web dinâmicas.
-2. **Containerização:** Docker para empacotamento imutável.
-3. **Orquestração (AWS EKS):** Cluster Kubernetes gerenciado.
-4. **GitOps (ArgoCD):** Controlador que sincroniza o estado do cluster com este repositório Git.
-5. **Infraestrutura (Terraform):** Provisiona VPC, EKS, Nodes e Helm Charts.
-6. **Observabilidade (Datadog):** Monitoramento de métricas, logs e APM.
-7. **CI/CD (GitHub Actions):** Pipeline de Segurança (Trivy), Build e Deploy.
+1. **Core App:** Aplicação principal em Python (Flask) para gestão de pacientes.
+2. **Apresentação:** Aplicação Nginx servindo o deck executivo e vídeo de demonstração do projeto.
 
----
+### Infraestrutura & Ferramentas:
 
-## 🚀 Comparativo: Legado vs. Moderno
-
-| Característica | 🐢 Modelo Tradicional (Legado) | 🐇 Modelo HealthFlow (SRE/DevOps) |
-| --- | --- | --- |
-| **Infraestrutura** | Servidores manuais ("Snowflakes"). | **IaC (Terraform):** Infra descartável e versionada. |
-| **Deploy** | Manual (FTP/SSH), alto risco. | **GitOps (ArgoCD):** O Cluster se auto-atualiza via Git. |
-| **Escalabilidade** | Limitada ao hardware físico. | **Elástica (Kubernetes):** Pods/Nodes escalam sob demanda. |
-| **Monitoramento** | Reativo (espera quebrar). | **Observabilidade (Datadog):** Proativo e centralizado. |
-| **Acesso** | VPN ou IP fixo direto na máquina. | **Load Balancer:** Distribuição de tráfego inteligente. |
+* **Orquestração:** AWS EKS (Kubernetes).
+* **GitOps:** ArgoCD sincronizando o estado do cluster com este repositório.
+* **IaC:** Terraform provisionando VPC, EKS, Nodes e Helm Charts.
+* **Observabilidade:** Datadog (Métricas, Logs e APM).
+* **CI/CD:** GitHub Actions (Security Scan, Build Docker, Deploy Infra).
 
 ---
 
@@ -38,7 +29,7 @@ O projeto utiliza uma arquitetura de microsserviços sobre Kubernetes (EKS).
 
 ### 1. Configurar o Repositório Remoto (Git)
 
-Para rodar as Actions na sua conta, aponte para o seu repositório:
+Aponte o projeto para o seu GitHub para rodar as Actions:
 
 ```bash
 git remote remove origin
@@ -61,68 +52,51 @@ Em **Settings > Secrets and variables > Actions**, adicione:
 | `DOCKER_PASSWORD` | Senha/Token Docker Hub. |
 | `TF_VAR_datadog_api_key` | API Key do Datadog. |
 
-### 3. Ajustar Variáveis do Terraform ⚠️ (CRUCIAL)
+### 3. Ajustar Variáveis do Terraform
 
-#### A. Atualizar ARNs das Roles (main.tf)
+* **`terraform/main.tf`**: Atualize os ARNs das Roles (`LabEksClusterRole` e `LabEksNodeRole`).
+* **`terraform/variables.tf`**: Atualize a `repo_url` para o seu GitHub.
 
-Como o AWS Academy muda o ID da conta a cada lab, você deve atualizar as roles.
+### 4. Ajustar Imagens Docker (Manifestos)
 
-1. No Console AWS, vá em **IAM > Roles**.
-2. Copie o ARN da `LabEksClusterRole` e da `LabEksNodeRole` (nomes com sufixos aleatórios).
-3. No arquivo `terraform/main.tf`, atualize o bloco `locals`:
-```hcl
-locals {
-  # ATUALIZE COM SEUS VALORES REAIS
-  cluster_role_arn = "arn:aws:iam::SEU_ID:role/LabEksClusterRole-XXXX"
-  node_role_arn    = "arn:aws:iam::SEU_ID:role/LabEksNodeRole-XXXX"
-}
-
-```
-
-
-
-#### B. Atualizar URL do Repositório (variables.tf)
-
-Para o ArgoCD sincronizar com o **seu** código:
-
-1. Abra `terraform/variables.tf`.
-2. Altere a variável `repo_url`:
-```hcl
-variable "repo_url" {
-  default = "https://github.com/SEU_USUARIO/NOME_DO_SEU_REPO"
-}
-
-```
-
-
-
-### 4. Ajustar Imagem Docker (Deployment)
-
-No arquivo `k8s/core/deployment.yaml`, altere a imagem para o seu usuário:
+Nos arquivos `k8s/core/deployment.yaml` e `k8s/apresentacao/deployment.yaml`, altere a imagem para o seu usuário:
 
 ```yaml
 image: SEU_USUARIO_DOCKER/health-core:latest
+# e
+image: SEU_USUARIO_DOCKER/health-apresentacao:latest
 
 ```
 
 ---
 
-## 🧪 Executando o Laboratório (Lab Lifecycle)
+## 🚀 Executando o Lab (Deploy)
 
-Este projeto usa um fluxo especial chamado **"Lab Lifecycle"** para economizar créditos da AWS. Ele cria, espera você usar, e destrói tudo automaticamente.
+1. Vá na aba **Actions** do GitHub e dispare o workflow **🧪 Lab Lifecycle**.
+2. Aguarde o pipeline finalizar (Build das imagens + Terraform Apply).
+3. Atualize suas credenciais locais:
+```bash
+aws eks update-kubeconfig --region us-east-1 --name health-flow-cluster
 
-1. Vá na aba **Actions** do GitHub.
-2. Selecione o workflow **🧪 Lab Lifecycle**.
-3. Clique em **Run workflow**.
-4. Escolha o tempo de duração (ex: **60 minutos**).
-5. O Pipeline fará:
-* 🛡️ Scan de segurança (Trivy).
-* 🐳 Build & Push da imagem Docker.
-* 🏗️ Provisionamento da Infra (Terraform Apply).
-* ⏳ **Pausa:** O sistema ficará "rodando" pelo tempo que você escolheu.
-* 🧨 **Auto-Destroy:** Ao final do tempo (ou se você cancelar), ele destrói tudo.
+```
 
 
+
+---
+
+## 🐙 Configurando o GitOps (ArgoCD)
+
+Para subir todas as aplicações (Core e Apresentação) de uma vez:
+
+1. Garanta que o arquivo `argo-applications.yaml` na raiz está apontando para o seu repositório.
+2. Aplique o manifesto mestre:
+```bash
+kubectl apply -f argo-applications.yaml
+
+```
+
+
+3. O ArgoCD detectará as pastas `k8s/core` e `k8s/apresentacao` e fará o deploy automático.
 
 ---
 
@@ -189,34 +163,56 @@ Acesse: [http://localhost:9090](https://www.google.com/search?q=http://localhost
 
 ---
 
-## 🐙 Acessando o ArgoCD (GitOps)
+*Copie a URL e acesse no navegador.*
 
-Para visualizar o estado do Cluster:
+### 2. Aplicação Apresentação (Slides & Vídeo)
 
-1. **Senha de Admin:**
+Acesse a apresentação executiva e o vídeo de demonstração:
+
 ```bash
-kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
+kubectl get svc apresentacao-service -n health-core --output jsonpath='{.status.loadBalancer.ingress[0].hostname}'
 
 ```
 
+*Copie a URL e acesse no navegador.*
 
-2. **Acesso (LoadBalancer):**
+### 3. Painel do ArgoCD
+
+Para ver o estado do GitOps e sincronização:
+
 ```bash
-kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
+# Pegar senha
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
+
+# Pegar URL (Se tiver criado LoadBalancer para ele)
 kubectl get svc argocd-server -n argocd --output jsonpath='{.status.loadBalancer.ingress[0].hostname}'
 
 ```
 
+---
 
-* Acesse via **HTTPS** (aceite o aviso de segurança). Usuário: `admin`.
+## 📂 Estrutura do Projeto
 
+```text
+.
+├── .github/workflows/
+│   └── lab-lifecycle.yml  # Pipeline (Security > Build > Deploy)
+├── argo-applications.yaml # Manifesto "App of Apps" do ArgoCD
+├── k8s/
+│   ├── core/              # Manifestos do App Core
+│   └── apresentacao/      # Manifestos da Apresentação [NOVO]
+├── src/
+│   ├── core-app/          # Código Python (Flask)
+│   └── apresentacao/      # Código HTML/Vídeo + Dockerfile [NOVO]
+├── terraform/             # Código IaC (EKS, VPC, Helm)
+└── README.md              # Documentação
 
+```
 
 ---
 
 ## ⚠️ Troubleshooting
 
-* **Site não abre (Timeout):** Verifique se você realizou o passo de "Liberar Acesso Externo (Security Group)" acima. O firewall da AWS bloqueia conexões externas por padrão.
-* **Ping falha no LoadBalancer:** Normal. A AWS bloqueia ICMP (Ping) por padrão. Teste com `curl -Iv URL` ou no navegador.
-* **ArgoCD OutOfSync:** Se você alterou algo manualmente, o ArgoCD reclama. Clique em "Sync" para forçar o estado do Git.
-* **Erro 403 no Terraform:** Suas credenciais do AWS Academy expiraram. Gere novas no portal.
+* **Apresentação sem vídeo:** Verifique se o arquivo `video.mp4` está na pasta `src/apresentacao` antes do commit. O Dockerfile precisa da instrução `COPY` correta.
+* **Site não abre (Timeout):** Verifique o **Security Group** dos Worker Nodes no Console EC2. Garanta que há uma regra de entrada liberando tráfego de `0.0.0.0/0`.
+* **Erro 403 no Terraform:** Suas credenciais do AWS Academy expiraram. Gere novas no portal e atualize as Secrets do GitHub.
