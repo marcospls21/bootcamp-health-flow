@@ -216,6 +216,6 @@ kubectl get svc argocd-server -n argocd --output jsonpath='{.status.loadBalancer
 
 ## ⚠️ Troubleshooting
 
-* **Apresentação sem vídeo:** Verifique se o arquivo `video.mp4` está na pasta `src/apresentacao` antes do commit. O Dockerfile precisa da instrução `COPY` correta.
+* **Apresentação sem vídeo:** Verifique se o arquivo `arquitetura.mp4` está na pasta `src/apresentacao` antes do commit. O Dockerfile precisa da instrução `COPY` correta.
 * **Site não abre (Timeout):** Verifique o **Security Group** dos Worker Nodes no Console EC2. Garanta que há uma regra de entrada liberando tráfego de `0.0.0.0/0`.
 * **Erro 403 no Terraform:** Suas credenciais do AWS Academy expiraram. Gere novas no portal e atualize as Secrets do GitHub.
