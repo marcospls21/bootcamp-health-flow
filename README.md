@@ -205,7 +205,10 @@ kubectl get svc argocd-server -n argocd --output jsonpath='{.status.loadBalancer
 │   ├── core-app/          # Código Python (Flask)
 │   └── apresentacao/      # Código HTML/Vídeo + Dockerfile [NOVO]
 ├── terraform/             # Código IaC (EKS, VPC, Helm)
+├── qodana.yaml            # Verificação de código
+├── tryvi                  # Scan de vulnerabilidade
 └── README.md              # Documentação
+
 
 ```
 
