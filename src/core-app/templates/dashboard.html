@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>HealthFlow - Área do Paciente</title>
+</head>
+
+<body style="font-family: sans-serif; text-align: center; padding: 50px;">
+    <h1>Bem-vindo, Marcos</h1>
+
+    <div style="background: #f0f0f0; padding: 20px; border-radius: 10px; max-width: 400px; margin: auto;">
+        <h3>Novo Agendamento</h3>
+        <form action="/agendar" method="POST">
+            <select name="especialidade" style="padding: 10px; width: 100%; margin-bottom: 10px;">
+                <option>Cardiologia</option>
+                <option>Ortopedia</option>
+                <option>Clínico Geral</option>
+            </select>
+            <input type="date" name="data" style="padding: 10px; width: 100%; margin-bottom: 10px;">
+            <button type="submit"
+                style="background: #007bff; color: white; padding: 10px 20px; border: none; cursor: pointer;">Agendar
+                Consulta</button>
+        </form>
+    </div>
+
+    <h3>Seus Agendamentos</h3>
+    <ul style="list-style: none; padding: 0;">
+        {% for item in agendamentos %}
+        <li style="background: #e3f2fd; margin: 5px auto; padding: 10px; max-width: 400px;">
+            🩺 {{ item.especialidade }} - 📅 {{ item.data }}
+        </li>
+        {% endfor %}
+    </ul>
+</body>
+
+</html>

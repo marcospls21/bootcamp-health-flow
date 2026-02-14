@@ -4,9 +4,10 @@ metadata:
   name: core-service
   namespace: health-core
 spec:
-  type: ClusterIP  # Usamos ClusterIP + Port-Forward no Lab
   selector:
     app: core
   ports:
-    - port: 80
-      targetPort: 80
+  - protocol: TCP
+    port: 80           # A porta que você acessa no navegador (Load Balancer)
+    targetPort: 5000   # A porta onde o Python Flask está rodando dentro do Pod
+  type: LoadBalancer   # MUDANÇA: Agora ele cria um IP externo na AWS
