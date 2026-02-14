@@ -1,5 +1,5 @@
 # Usa uma imagem Nginx super leve (Alpine Linux)
-FROM nginx:alpine
+FROM nginx:1.25-alpine
 
 # Remove a página padrão do Nginx
 RUN rm -rf /usr/share/nginx/html/*
