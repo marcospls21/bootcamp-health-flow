@@ -1,0 +1,133 @@
+name: 1. CI - Ruff Quality, Security & Build
+
+on:
+  workflow_dispatch: # Gatilho Manual
+
+jobs:
+  # ======================================================
+  # JOB 1: QUALIDADE DE CÓDIGO (RUFF) - Python
+  # ======================================================
+  quality-check:
+    name: ⚡ Fast Quality Check (Ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do Código
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install Ruff
+        run: pip install ruff
+
+      - name: Run Ruff Linter
+        # Roda apenas na pasta do Core App (onde tem Python)
+        # --output-format=github: Mostra erros bonitos no log do GitHub
+        run: ruff check src/core-app/ --output-format=github
+
+  # ======================================================
+  # JOB 2: SEGURANÇA (TRIVY) & BUILD (DOCKER)
+  # ======================================================
+  security-build-push:
+    name: 🛡️ Security & Build
+    needs: quality-check # Só roda se o Ruff aprovar o código
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do Código
+        uses: actions/checkout@v3
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login no Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # ------------------------------------------------------
+      # APLICAÇÃO 1: CORE APP (Python)
+      # ------------------------------------------------------
+      - name: 🐍 Build Core (Local Load)
+        uses: docker/build-push-action@v4
+        with:
+          context: ./src/core-app
+          load: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/health-core:${{ github.sha }}
+
+      - name: 🛡️ Trivy Scan - Core App
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: '${{ secrets.DOCKER_USERNAME }}/health-core:${{ github.sha }}'
+          format: 'table'
+          exit-code: '1' # Quebra se achar erro crítico
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      - name: 🚀 Push Core to Registry
+        uses: docker/build-push-action@v4
+        with:
+          context: ./src/core-app
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/health-core:latest
+            ${{ secrets.DOCKER_USERNAME }}/health-core:${{ github.sha }}
+
+      # ------------------------------------------------------
+      # APLICAÇÃO 2: APRESENTAÇÃO (Nginx)
+      # ------------------------------------------------------
+      - name: 📑 Build Apresentacao (Local)
+        uses: docker/build-push-action@v4
+        with:
+          context: ./src/apresentacao
+          load: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/health-apresentacao:${{ github.sha }}
+
+      - name: 🛡️ Trivy Scan - Apresentacao
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: '${{ secrets.DOCKER_USERNAME }}/health-apresentacao:${{ github.sha }}'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+
+      - name: 🚀 Push Apresentacao to Registry
+        uses: docker/build-push-action@v4
+        with:
+          context: ./src/apresentacao
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/health-apresentacao:latest
+            ${{ secrets.DOCKER_USERNAME }}/health-apresentacao:${{ github.sha }}
+
+      # ------------------------------------------------------
+      # APLICAÇÃO 3: VÍDEO (Nginx)
+      # ------------------------------------------------------
+      - name: 🎬 Build Video (Local)
+        uses: docker/build-push-action@v4
+        with:
+          context: ./src/video-app
+          load: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/health-video:${{ github.sha }}
+
+      - name: 🛡️ Trivy Scan - Video
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: '${{ secrets.DOCKER_USERNAME }}/health-video:${{ github.sha }}'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+
+      - name: 🚀 Push Video to Registry
+        uses: docker/build-push-action@v4
+        with:
+          context: ./src/video-app
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/health-video:latest
+            ${{ secrets.DOCKER_USERNAME }}/health-video:${{ github.sha }}

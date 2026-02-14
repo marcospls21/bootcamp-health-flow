@@ -157,35 +157,26 @@ resource "helm_release" "datadog" {
 
   depends_on = [aws_eks_node_group.this]
 
-  set_sensitive {
-    name  = "datadog.apiKey"
-    value = var.datadog_api_key
-  }
+# Stack de Observabilidade (Prometheus + Grafana)
+resource "helm_release" "kube_prometheus_stack" {
+  name       = "prometheus-stack"
+  repository = "https://prometheus-community.github.io/helm-charts"
+  chart      = "kube-prometheus-stack"
+  namespace  = "monitoring"
+  create_namespace = true
 
   set {
-    name  = "datadog.site"
-    value = "datadoghq.com"
+    name  = "grafana.service.type"
+    value = "LoadBalancer" # Para você acessar externo
   }
-  set {
-    name  = "datadog.logs.enabled"
-    value = "true"
-  }
-  set {
-    name  = "datadog.logs.containerCollectAll"
-    value = "true"
-  }
-  set {
-    name  = "clusterAgent.enabled"
-    value = "true"
-  }
-  set {
-    name  = "clusterAgent.metricsProvider.enabled"
-    value = "true"
-  }
-  set {
-    name  = "kubeStateMetricsCore.enabled"
-    value = "true"
-  }
+}
+
+# Loki (Logs) - O substituto leve do Graylog
+resource "helm_release" "loki_stack" {
+  name       = "loki"
+  repository = "https://grafana.github.io/helm-charts"
+  chart      = "loki-stack"
+  namespace  = "monitoring"
 }
 
 # --- DEPLOY APPS (Com criação de Namespace) ---
@@ -202,4 +193,14 @@ resource "null_resource" "deploy_apps" {
       kubectl apply -f ../k8s/video/
     EOT
   }
+}
+
+provider "kubectl" {
+  # ... configurações de auth iguais ao provider kubernetes
+}
+
+resource "kubectl_manifest" "argocd_apps" {
+    # Lê o arquivo da raiz do projeto e aplica
+    yaml_body = file("${path.module}/../argo-applications.yaml")
+    depends_on = [helm_release.argocd]
 }

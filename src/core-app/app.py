@@ -1,27 +1,30 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect, url_for
+import os
 
-# Define que a pasta de templates está no diretório local
-app = Flask(__name__, template_folder='templates')
+app = Flask(__name__)
+
+# Simulação de Banco de Dados
+agendamentos = []
 
 @app.route('/')
-def home():
-    # Renderiza a página inicial (index.html)
-    return render_template('index.html')
-
-@app.route('/index.html')
-def index_redirect():
-    return render_template('index.html')
-
-@app.route('/login.html')
-def login():
-    # Renderiza a página de login
+def index():
     return render_template('login.html')
 
-# Rota de verificação de saúde (Health Check) para o Kubernetes
-@app.route('/health')
-def health():
-    return "OK", 200
+@app.route('/login', methods=['POST'])
+def login():
+    # Login Fake para demo
+    return redirect(url_for('dashboard'))
 
-if __name__ == "__main__":
-    # host='0.0.0.0' é OBRIGATÓRIO para funcionar no Docker/K8s
-    app.run(host='0.0.0.0', port=80)
+@app.route('/dashboard')
+def dashboard():
+    return render_template('dashboard.html', agendamentos=agendamentos)
+
+@app.route('/agendar', methods=['POST'])
+def agendar():
+    especialidade = request.form.get('especialidade')
+    data = request.form.get('data')
+    agendamentos.append({'especialidade': especialidade, 'data': data})
+    return redirect(url_for('dashboard'))
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)

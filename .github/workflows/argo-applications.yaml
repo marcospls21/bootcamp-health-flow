@@ -1,0 +1,58 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: health-core
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/marcospls21/bootcamp-health-flow'
+    targetRevision: main
+    path: k8s/core
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: health-core
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: health-apresentacao
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/marcospls21/bootcamp-health-flow'
+    targetRevision: main
+    path: k8s/apresentacao
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: health-core
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: health-video
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/marcospls21/bootcamp-health-flow'
+    targetRevision: main
+    path: k8s/video-app
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: health-core
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
