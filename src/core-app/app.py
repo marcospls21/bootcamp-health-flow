@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
-import os
+# REMOVIDO: import os  <-- O erro estava aqui
 
 app = Flask(__name__)
 
