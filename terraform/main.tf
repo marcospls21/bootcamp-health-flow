@@ -160,12 +160,17 @@ resource "helm_release" "kube_prometheus_stack" {
   }
 }
 
-# Loki (Logs) - O substituto leve do Graylog
 resource "helm_release" "loki_stack" {
-  name       = "loki"
-  repository = "https://grafana.github.io/helm-charts"
-  chart      = "loki-stack"
-  namespace  = "monitoring"
+  name             = "loki"
+  repository       = "https://grafana.github.io/helm-charts"
+  chart            = "loki-stack"
+  namespace        = "monitoring"
+  create_namespace = true # <--- ESSENCIAL: Cria o namespace se ele não existir
+
+  # Garante que tenta instalar só depois que o Prometheus (que também usa esse namespace) for processado
+  depends_on = [
+    helm_release.kube_prometheus_stack
+  ]
 }
 
 # --- DEPLOY APPS (Com criação de Namespace) ---
