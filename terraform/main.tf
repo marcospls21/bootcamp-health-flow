@@ -146,23 +146,12 @@ resource "helm_release" "argocd" {
   }
 }
 
-# --- HELM: Datadog (Versão Corrigida) ---
-resource "helm_release" "datadog" {
-  name             = "datadog"
-  repository       = "https://helm.datadoghq.com"
-  chart            = "datadog"
-  namespace        = "datadog"
-  create_namespace = true
-  version          = "3.48.0" # Versão estável conhecida
-
-  depends_on = [aws_eks_node_group.this]
-
 # Stack de Observabilidade (Prometheus + Grafana)
 resource "helm_release" "kube_prometheus_stack" {
-  name       = "prometheus-stack"
-  repository = "https://prometheus-community.github.io/helm-charts"
-  chart      = "kube-prometheus-stack"
-  namespace  = "monitoring"
+  name             = "prometheus-stack"
+  repository       = "https://prometheus-community.github.io/helm-charts"
+  chart            = "kube-prometheus-stack"
+  namespace        = "monitoring"
   create_namespace = true
 
   set {
@@ -200,7 +189,7 @@ provider "kubectl" {
 }
 
 resource "kubectl_manifest" "argocd_apps" {
-    # Lê o arquivo da raiz do projeto e aplica
-    yaml_body = file("${path.module}/../argo-applications.yaml")
-    depends_on = [helm_release.argocd]
+  # Lê o arquivo da raiz do projeto e aplica
+  yaml_body  = file("${path.module}/../argo-applications.yaml")
+  depends_on = [helm_release.argocd]
 }
