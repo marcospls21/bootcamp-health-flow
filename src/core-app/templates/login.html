@@ -4,66 +4,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HealthFlow - Login</title>
+    <title>HealthFlow - Portal de Acesso</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
-            background-color: #f0f2f5;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             display: flex;
             align-items: center;
             height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         .login-card {
             width: 100%;
-            max-width: 400px;
-            padding: 2rem;
+            max-width: 420px;
+            padding: 2.5rem;
             margin: auto;
-            border-radius: 1rem;
+            border: none;
+            border-radius: 20px;
             background: white;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .brand-logo {
+            color: #0d6efd;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            padding: 12px;
+            border: 1px solid #dee2e6;
+        }
+
+        .btn-primary {
+            border-radius: 10px;
+            padding: 12px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
+        }
+
+        .btn-outline-success {
+            border-radius: 10px;
+            border-width: 2px;
+            font-weight: 600;
         }
     </style>
 </head>
 
 <body>
     <div class="login-card">
-        <h2 class="text-center text-primary fw-bold mb-4">HealthFlow</h2>
+        <div class="text-center mb-4">
+            <h1 class="brand-logo mb-1">HealthFlow</h1>
+            <p class="text-muted">Gestão Hospitalar Inteligente</p>
+        </div>
+
         <form action="/auth" method="POST">
             <div class="mb-3">
-                <label class="form-label">Usuário</label>
-                <input type="text" name="usuario" class="form-control" required>
+                <label class="form-label text-secondary small fw-bold">USUÁRIO</label>
+                <input type="text" name="usuario" class="form-control" placeholder="admin" required>
             </div>
-            <div class="mb-3">
-                <label class="form-label">Senha</label>
-                <input type="password" name="senha" class="form-control" required>
+            <div class="mb-4">
+                <label class="form-label text-secondary small fw-bold">SENHA</label>
+                <input type="password" name="senha" class="form-control" placeholder="••••••••" required>
             </div>
-            <button type="submit" class="btn btn-primary w-100">Entrar</button>
+            <button type="submit" class="btn btn-primary w-100 mb-3">Entrar no Sistema</button>
         </form>
-        <div class="text-center mt-4 pt-3 border-top">
-            <button class="btn btn-outline-success w-100" data-bs-toggle="modal" data-bs-target="#modalCad">Novo
-                Cadastro</button>
+
+        <div class="text-center mt-3 pt-3 border-top">
+            <p class="text-muted small mb-3">Novo profissional ou paciente?</p>
+            <button class="btn btn-outline-success w-100" data-bs-toggle="modal" data-bs-target="#modalCad">
+                Solicitar Cadastro
+            </button>
         </div>
     </div>
 
-    <div class="modal fade" id="modalCad" tabindex="-1">
-        <div class="modal-dialog">
-            <form class="modal-content" action="/cadastrar" method="POST">
-                <div class="modal-header">
-                    <h5>Solicitar Consulta</h5>
+    <div class="modal fade" id="modalCad" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow" style="border-radius: 20px;">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold">Novo Agendamento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <input type="text" name="nome" class="form-control mb-2" placeholder="Nome do Paciente" required>
-                    <input type="text" name="especialidade" class="form-control mb-2"
-                        placeholder="Especialidade (Ex: Cardio)" required>
-                    <input type="time" name="horario" class="form-control mb-2" required>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-success">Cadastrar</button>
-                </div>
-            </form>
+                <form action="/cadastrar" method="POST">
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <input type="text" name="nome" class="form-control" placeholder="Nome Completo do Paciente"
+                                required>
+                        </div>
+                        <div class="mb-3">
+                            <input type="text" name="especialidade" class="form-control"
+                                placeholder="Especialidade Médica" required>
+                        </div>
+                        <div class="mb-1">
+                            <label class="form-label text-muted small">Horário da Consulta</label>
+                            <input type="time" name="horario" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="submit" class="btn btn-success w-100 py-2">Confirmar Cadastro</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/bootstrap.bundle.min.js"></script>
 </body>
 
