@@ -36,20 +36,25 @@ jobs:
         working-directory: ./terraform
 
       # ======================================================
-      # ESTRATÉGIA DE APPLY EM DUAS ETAPAS (Fix Connection Refused)
+      # ESTRATÉGIA DE APPLY EM DUAS ETAPAS
       # ======================================================
       
       # PASSO 1: Cria apenas a infraestrutura física (VPC e EKS)
-      # Isso garante que o endpoint do cluster exista antes de tentar instalar o Helm
       - name: 1️⃣ Terraform Apply - Infra Core (VPC + EKS)
         if: ${{ inputs.action == 'apply' }}
         run: |
           echo "🚧 Criando Cluster EKS e Rede primeiro..."
-          terraform apply -target=module.vpc -target=module.eks -auto-approve
+          terraform apply -target=module.vpc -target=aws_eks_cluster.this -target=aws_eks_node_group.this -auto-approve
         working-directory: ./terraform
 
+      # PASSO INTERMEDIÁRIO: Atualiza o contexto do Kubernetes para o Runner
+      - name: 🛰️ Update Kubeconfig
+        if: ${{ inputs.action == 'apply' }}
+        run: |
+          # Usamos o nome fixo que está no seu main.tf para evitar erros de secret
+          aws eks update-kubeconfig --region us-east-1 --name health-flow-cluster
+
       # PASSO 2: Instala todo o resto (Helm, ArgoCD, Apps)
-      # Agora que o cluster existe, o provider Helm consegue conectar
       - name: 2️⃣ Terraform Apply - Full Stack (Apps & Monitoring)
         if: ${{ inputs.action == 'apply' }}
         run: |
@@ -58,7 +63,7 @@ jobs:
         working-directory: ./terraform
 
       # ======================================================
-      # ESTRATÉGIA DE DESTROY (Padrão)
+      # ESTRATÉGIA DE DESTROY
       # ======================================================
       - name: 🧨 Terraform Destroy
         if: ${{ inputs.action == 'destroy' }}
