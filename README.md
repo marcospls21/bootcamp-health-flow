@@ -1,9 +1,3 @@
-Aqui está o seu `README.md` totalmente atualizado! 🚀
-
-Adicionei as novas funcionalidades (Login, Dashboard, Banco de Dados RDS), as ferramentas de monitoramento (Grafana/Prometheus) e os comandos exatos que usamos para recuperar as senhas e URLs.
-
----
-
 # 🏥 HealthFlow - DevOps & SRE Cloud Lab
 
 O **HealthFlow** é uma plataforma de gestão de saúde digital simulada. Este laboratório demonstra um ciclo de vida moderno de Engenharia de Software e Cloud, migrando de uma mentalidade legada para **Cloud Native**.
