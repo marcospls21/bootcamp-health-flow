@@ -1,10 +1,9 @@
-# Usa uma imagem Nginx super leve (Alpine Linux)
-FROM nginx:1.25-alpine
+FROM nginx:alpine
 
-# Remove a página padrão do Nginx
-RUN rm -rf /usr/share/nginx/html/*
+# Copia o HTML para a pasta padrão do Nginx
+COPY index.html /usr/share/nginx/html/index.html
 
-# Copia seus arquivos (HTML e o Vídeo) para a pasta do servidor
-COPY . /usr/share/nginx/html
+# Expõe a porta 80
+EXPOSE 80
 
-# O Nginx já expõe a porta 80 por padrão, então não precisa do EXPOSE manual
+CMD ["nginx", "-g", "daemon off;"]

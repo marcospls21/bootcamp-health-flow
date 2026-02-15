@@ -197,3 +197,26 @@ resource "kubernetes_namespace" "health_core" {
   metadata { name = "health-core" }
   depends_on = [aws_eks_node_group.this]
 }
+
+# --- REGRA ADICIONAL: LIBERAR TRÁFEGO PARA O CLUSTER (Acesso ao Site e DBeaver) ---
+
+# 1. Liberar porta 80 (Site) nos Nodes do EKS
+resource "aws_security_group_rule" "allow_http_nodes" {
+  type              = "ingress"
+  from_port         = 80
+  to_port           = 80
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"] # Permite acesso ao site de qualquer lugar [cite: 2026-02-14]
+  security_group_id = aws_eks_cluster.this.vpc_config[0].cluster_security_group_id
+}
+
+# 2. Ajuste na regra do Banco para permitir o DBeaver da sua casa
+# Substituímos a regra interna por uma que aceita conexões externas [cite: 2026-02-14]
+resource "aws_security_group_rule" "allow_dbeaver_rds" {
+  type              = "ingress"
+  from_port         = 5432
+  to_port           = 5432
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"] # Necessário para o DBeaver funcionar fora da VPC [cite: 2026-02-14]
+  security_group_id = aws_security_group.db_sg.id
+}

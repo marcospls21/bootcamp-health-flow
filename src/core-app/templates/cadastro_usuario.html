@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HealthFlow | Cadastro</title>
+    <style>
+        :root {
+            --primary: #1f7ae0;
+            --secondary: #0f3c6e;
+            --background: #f5f7fb;
+            --card: #ffffff;
+            --text: #1f2933;
+            --muted: #6b7280;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 0;
+        }
+
+        .reg-container {
+            background: var(--card);
+            padding: 40px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+            /* Largura ideal para lista vertical */
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            margin: 20px;
+        }
+
+        /* Título idêntico ao Login */
+        .reg-container h1 {
+            text-align: center;
+            margin-bottom: 5px;
+            color: var(--primary);
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .reg-container p {
+            text-align: center;
+            margin-bottom: 25px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--secondary);
+            text-transform: uppercase;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+            transition: border 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 5px rgba(31, 122, 224, 0.2);
+        }
+
+        button {
+            width: 100%;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 14px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #1865ba;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+        }
+
+        .back-link a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="reg-container">
+        <h1>HealthFlow</h1>
+        <p>Preencha os dados abaixo</p>
+
+        <form action="/salvar_usuario" method="POST">
+
+            <div class="form-group">
+                <label>Nome Completo</label>
+                <input type="text" name="nome_completo" required>
+            </div>
+
+            <div class="form-group">
+                <label>E-mail</label>
+                <input type="email" name="email" placeholder="exemplo@email.com" required>
+            </div>
+
+            <div class="form-group">
+                <label>CPF</label>
+                <input type="text" name="cpf" placeholder="000.000.000-00" required>
+            </div>
+
+            <div class="form-group">
+                <label>Telefone</label>
+                <input type="text" name="telefone" placeholder="(11) 99999-9999" required>
+            </div>
+
+            <div class="form-group">
+                <label>CEP</label>
+                <input type="text" name="cep" placeholder="00000-000" required>
+            </div>
+
+            <div class="form-group">
+                <label>Rua</label>
+                <input type="text" name="rua" required>
+            </div>
+
+            <div class="form-group">
+                <label>Número</label>
+                <input type="text" name="numero" required>
+            </div>
+
+            <div class="form-group">
+                <label>Complemento</label>
+                <input type="text" name="complemento">
+            </div>
+
+            <div class="form-group">
+                <label>Senha</label>
+                <input type="password" name="senha" required>
+            </div>
+
+            <button type="submit">CRIAR CONTA</button>
+        </form>
+
+        <div class="back-link">
+            <a href="/">Voltar para o Login</a>
+        </div>
+    </div>
+
+</body>
+
+</html>
