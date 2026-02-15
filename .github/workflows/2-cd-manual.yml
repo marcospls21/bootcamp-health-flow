@@ -65,7 +65,47 @@ jobs:
       # ======================================================
       # ESTRATÉGIA DE DESTROY
       # ======================================================
-      - name: 🧨 Terraform Destroy
-        if: ${{ inputs.action == 'destroy' }}
+    destroy:
+      name: 'Terraform Destroy (Limpeza Total)'
+      runs-on: ubuntu-latest
+      # Só roda se você selecionar a opção "destroy" no input manual
+      if: github.event.inputs.action == 'destroy'
+      
+      defaults:
+        run:
+          shell: bash
+          working-directory: ./terraform  # Garante que roda na pasta certa
+
+      steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      # --- 🛡️ PASSO NOVO: LIMPEZA DE REDE (SRE FIX) ---
+      - name: SRE Cleanup - Remover LoadBalancers do K8s
+        run: |
+          echo "🔌 Tentando conectar ao cluster para remover LoadBalancers..."
+          # O "|| true" impede que o pipeline falhe se o cluster já não existir
+          aws eks update-kubeconfig --name health-cluster --region us-east-1 || true
+          
+          echo "🗑️ Deletando todos os serviços LoadBalancer..."
+          kubectl delete svc --all --all-namespaces --timeout=30s || true
+          
+          echo "⏳ Aguardando 60 segundos para a AWS liberar as interfaces de rede..."
+          sleep 60
+      # --------------------------------------------------
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Destroy
         run: terraform destroy -auto-approve
-        working-directory: ./terraform
