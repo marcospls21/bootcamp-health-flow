@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: video-app
-        image: marcospls/video-app:latest  # <--- ATENÇÃO: Verifique o nome da imagem
+        image: marcospls/health-video:latest  # <--- ATENÇÃO: Verifique o nome da imagem
         ports:
         - containerPort: 80
         resources:
