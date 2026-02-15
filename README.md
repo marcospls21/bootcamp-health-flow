@@ -110,17 +110,6 @@ Como o LoadBalancer da AWS Academy é HTTP, habilite a flag de segurança no Chr
 
 ---
 
-## 🧹 Destruição do Ambiente (Importante)
-
-Para evitar custos e erros de dependência, utilize o script automatizado que limpa os Load Balancers antes de destruir a VPC:
-
-```bash
-chmod +x destroy.sh
-./destroy.sh
-
-```
-
----
 
 ## 👨‍💻 Autor
 
