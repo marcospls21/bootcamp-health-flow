@@ -4,107 +4,591 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel HealthFlow</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <title>HealthFlow | Dashboard Integrado</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
     <style>
+        :root {
+            --primary: #1f7ae0;
+            /* Azul HealthFlow */
+            --secondary: #0f3c6e;
+            /* Azul Escuro */
+            --bg-light: #f4f6f9;
+            /* Fundo Cinza Claro */
+            --text-dark: #333;
+            --sidebar-width: 260px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-light);
+            overflow-x: hidden;
+        }
+
+        /* --- SIDEBAR COMPLETA (Menu Lateral) --- */
         .sidebar {
-            min-height: 100vh;
-            background: #212529;
+            width: var(--sidebar-width);
+            background-color: #fff;
+            height: 100vh;
+            position: fixed;
+            border-right: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+            overflow-y: auto;
+            /* Permite rolar se o menu for muito grande */
+        }
+
+        .sidebar-header {
+            background-color: var(--primary);
             color: white;
+            padding: 20px;
+            font-weight: bold;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu-section {
+            padding: 20px 0 5px 25px;
+            font-size: 11px;
+            color: #999;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 1px;
         }
 
         .nav-link {
-            color: #adb5bd;
+            color: #555;
+            padding: 11px 25px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.2s;
+            border-right: 4px solid transparent;
         }
 
+        .nav-link:hover,
         .nav-link.active {
-            color: white;
-            background: #0d6efd;
-            border-radius: 5px;
+            background-color: #eef2f7;
+            color: var(--primary);
+            border-right-color: var(--primary);
+            font-weight: 500;
         }
 
-        .card-stat {
-            border-left: 5px solid #0d6efd;
+        .nav-link i {
+            width: 20px;
+            text-align: center;
+            color: #777;
+        }
+
+        .nav-link:hover i {
+            color: var(--primary);
+        }
+
+        /* --- CONTEÚDO PRINCIPAL --- */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            width: calc(100% - var(--sidebar-width));
+            min-height: 100vh;
+            padding-bottom: 40px;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background-color: var(--primary);
+            color: white;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.6);
+        }
+
+        .top-icons i {
+            margin-left: 20px;
+            cursor: pointer;
+            opacity: 0.8;
+            transition: 0.3s;
+            font-size: 16px;
+        }
+
+        .top-icons i:hover {
+            opacity: 1;
+        }
+
+        /* --- CARDS & WIDGETS --- */
+        .page-header {
+            background: white;
+            padding: 25px 30px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 30px;
+        }
+
+        .card-custom {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+            height: 100%;
+            padding: 20px;
+        }
+
+        /* Stats Cards (Topo) */
+        .stat-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding: 15px 20px;
+            background: white;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
+
+        .stat-card:hover {
+            border-color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .stat-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+
+        .bg-blue {
+            background-color: #3498db;
+        }
+
+        .bg-green {
+            background-color: #2ecc71;
+        }
+
+        .bg-grey {
+            background-color: #95a5a6;
+        }
+
+        .stat-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: #333;
+            line-height: 1.2;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #777;
+        }
+
+        /* Lista de Pacientes (Scrollável) */
+        .patient-list-container {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .patient-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .patient-row:last-child {
+            border-bottom: none;
+        }
+
+        /* Botão de Vídeo Personalizado */
+        .btn-video {
+            background-color: #e3f2fd;
+            color: var(--primary);
+            border: 1px solid transparent;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.3s;
+        }
+
+        .btn-video:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        /* Círculo Sala de Espera */
+        .circle-wait {
+            width: 120px;
+            height: 120px;
+            background-color: #e8f5e9;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: #2e7d32;
+            border: 5px solid #c8e6c9;
+        }
+
+        .wait-number {
+            font-size: 42px;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        /* Tabelas Financeiras */
+        .table-finance th {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #999;
+            font-weight: 600;
+        }
+
+        .table-finance td {
+            font-size: 13px;
+            vertical-align: middle;
+            padding: 10px 0.5rem;
         }
     </style>
 </head>
 
 <body>
-    <div class="container-fluid">
-        <div class="row">
-            <nav class="col-md-2 d-none d-md-block sidebar p-3">
-                <h4 class="mb-4">HealthFlow</h4>
-                <ul class="nav flex-column">
-                    <li class="nav-item mb-2"><a href="#" class="nav-link active"><i class="bi bi-house-door me-2"></i>
-                            Painel Geral</a></li>
-                    <li class="nav-item mb-2"><a href="#" class="nav-link"><i class="bi bi-calendar-check me-2"></i>
-                            Consultas</a></li>
-                    <li class="nav-item mt-4"><a href="/" class="nav-link text-danger"><i
-                                class="bi bi-box-arrow-right me-2"></i> Sair</a></li>
-                </ul>
-            </nav>
 
-            <main class="col-md-10 p-4">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h3>Bem-vindo, Dr. Marcos</h3>
-                    <div class="text-muted small">Conectado ao RDS: {{ config['DB_NAME'] }}</div>
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-heartbeat me-2"></i> HealthFlow
+        </div>
+
+        <div class="menu-section">Principal</div>
+        <a href="#" class="nav-link active"><i class="fas fa-home"></i> Início</a>
+        <a href="#" class="nav-link"><i class="fas fa-user-injured"></i> Pacientes</a>
+        <a href="#" class="nav-link"><i class="fas fa-calendar-alt"></i> Agenda</a>
+
+        <div class="menu-section">Administrativo</div>
+        <a href="#" class="nav-link"><i class="fas fa-dollar-sign"></i> Financeiro</a>
+        <a href="#" class="nav-link"><i class="fas fa-file-medical-alt"></i> TISS</a>
+        <a href="#" class="nav-link"><i class="fas fa-boxes"></i> Estoque</a>
+        <a href="#" class="nav-link"><i class="fas fa-bullhorn"></i> Marketing</a>
+        <a href="#" class="nav-link"><i class="fas fa-chart-line"></i> Relatórios</a>
+
+        <div class="menu-section">Outros</div>
+        <a href="#" class="nav-link"><i class="fas fa-book-open"></i> Catálogos</a>
+        <a href="#" class="nav-link"><i class="fas fa-cog"></i> Opções</a>
+    </nav>
+
+    <div class="main-content">
+        <header class="top-bar">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-bars me-3 fs-5" style="cursor: pointer;"></i>
+                <span class="fw-bold">Painel de Controle</span>
+            </div>
+            <div class="d-flex align-items-center top-icons">
+                <div class="user-profile me-4">
+                    <div class="text-end me-2 d-none d-sm-block">
+                        <div class="fw-bold" style="line-height: 1.2;">Dr. Marcos SRE</div>
+                        <small style="opacity: 0.8; font-size: 11px;">Administrador</small>
+                    </div>
+                    <img src="https://ui-avatars.com/api/?name=Marcos+SRE&background=ffffff&color=1f7ae0"
+                        class="user-avatar">
                 </div>
+                <i class="fas fa-moon" title="Modo Escuro"></i>
+                <i class="fas fa-question-circle" title="Ajuda"></i>
+                <a href="/" class="text-white" title="Sair"><i class="fas fa-power-off"></i></a>
+            </div>
+        </header>
 
-                <div class="row mb-4">
-                    <div class="col-md-4">
-                        <div class="card p-3 shadow-sm card-stat">
-                            <h6 class="text-muted">Total de Consultas</h6>
-                            <h4>{{ consultas|length }}</h4>
+        <div class="page-header">
+            <div class="d-flex align-items-center gap-3">
+                <div class="bg-light p-2 rounded border">
+                    <i class="fas fa-hospital-alt text-secondary" style="font-size: 32px;"></i>
+                </div>
+                <div>
+                    <small class="text-muted fw-bold text-uppercase" id="data-atual">Carregando data...</small>
+                    <h3 class="mb-0 text-secondary fw-bold">Consultórios Integrados</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="container-fluid px-4">
+            <div class="row g-4 mb-4">
+                <div class="col-lg-4">
+                    <div class="stat-card">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="stat-icon bg-blue"><i class="fas fa-users"></i></div>
+                            <div>
+                                <div class="stat-label">Pacientes cadastrados</div>
+                                <div class="stat-value">{{ total_pacientes }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="stat-icon bg-green"><i class="fas fa-calendar-check"></i></div>
+                            <div>
+                                <div class="stat-label">Agendamentos hoje</div>
+                                <div class="stat-value">{{ total_hoje }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card mb-0">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="stat-icon bg-grey"><i class="fas fa-birthday-cake"></i></div>
+                            <div>
+                                <div class="stat-label">Aniversariantes do dia</div>
+                                <div class="stat-value">0</div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <div class="card shadow-sm">
-                    <div class="card-header bg-white py-3">
-                        <h5 class="mb-0">Consultas Agendadas (Dados do PostgreSQL)</h5>
+                <div class="col-lg-4">
+                    <div class="card-custom">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="text-secondary fw-bold m-0">Pacientes Recentes</h6>
+                            <span class="badge bg-light text-dark border">Hoje</span>
+                        </div>
+
+                        <div class="patient-list-container">
+                            {% if consultas %}
+                            {% for c in consultas %}
+                            <div class="patient-row">
+                                <div class="d-flex align-items-center gap-2">
+                                    <img src="https://ui-avatars.com/api/?name={{ c.nome }}&background=random&size=32"
+                                        class="rounded-circle">
+                                    <div style="line-height: 1.2;">
+                                        <div class="fw-bold" style="font-size: 13px;">{{ c.nome }}</div>
+                                        <small class="text-muted" style="font-size: 11px;">{{ c.especialidade }} • {{
+                                            c.horario }}</small>
+                                    </div>
+                                </div>
+                                <a href="http://SEU_LOADBALANCER_VIDEO/?room=Consulta-{{ c.nome | replace(' ', '-') }}"
+                                    target="_blank" class="btn-video" title="Iniciar Telemedicina">
+                                    <i class="fas fa-video"></i> Chamar
+                                </a>
+                            </div>
+                            {% endfor %}
+                            {% else %}
+                            <div class="text-center py-5 text-muted">
+                                <i class="far fa-folder-open mb-2 fs-4"></i>
+                                <p class="small">Nenhum agendamento.</p>
+                            </div>
+                            {% endif %}
+                        </div>
                     </div>
-                    <div class="card-body p-0">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
+                </div>
+
+                <div class="col-lg-4">
+                    <div class="card-custom text-center h-100 d-flex flex-column justify-content-center">
+                        <h6 class="text-muted mb-4 text-start fw-bold">Sala de Espera</h6>
+                        <div class="circle-wait">
+                            <span class="wait-number">{{ consultas|length if consultas else 0 }}</span>
+                            <span
+                                style="font-size: 10px; text-transform: uppercase; font-weight: bold;">Aguardando</span>
+                        </div>
+                        <p class="text-muted small mb-4">Pacientes na fila virtual.</p>
+
+                        <button class="btn btn-primary w-100 py-2 fw-bold shadow-sm" data-bs-toggle="modal"
+                            data-bs-target="#modalAgendar">
+                            <i class="fas fa-plus-circle me-2"></i> Novo Agendamento
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <div class="col-md-5">
+                    <div class="card-custom">
+                        <h6 class="text-secondary fw-bold mb-3">Pacientes por Convênio</h6>
+                        <canvas id="chartConvenio" height="200"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-7">
+                    <div class="card-custom">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="text-secondary fw-bold m-0">Consultas por Mês</h6>
+                            <div>
+                                <i class="fas fa-chart-bar text-muted ms-2"></i>
+                                <i class="fas fa-download text-muted ms-2"></i>
+                            </div>
+                        </div>
+                        <canvas id="chartConsultas" height="130"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="card-custom">
+                        <h6 class="text-secondary fw-bold mb-3">Contas a Pagar</h6>
+                        <table class="table table-hover table-finance mb-0">
+                            <thead>
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Paciente</th>
-                                    <th>Especialidade</th>
-                                    <th>Horário</th>
-                                    <th>Status</th>
+                                    <th>Data</th>
+                                    <th>Descrição</th>
+                                    <th class="text-end">Valor</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for consulta in consultas %}
                                 <tr>
-                                    <td>{{ consulta.id }}</td>
-                                    <td class="fw-bold">{{ consulta.nome }}</td>
-                                    <td>{{ consulta.especialidade }}</td>
-                                    <td>{{ consulta.horario }}</td>
-                                    <td>
-                                        {% if consulta.status == 'Confirmado' %}
-                                        <span class="badge bg-success">Confirmado</span>
-                                        {% elif consulta.status == 'Pendente' %}
-                                        <span class="badge bg-warning text-dark">Pendente</span>
-                                        {% else %}
-                                        <span class="badge bg-secondary">{{ consulta.status }}</span>
-                                        {% endif %}
-                                    </td>
+                                    <td><i class="fas fa-times-circle text-danger me-2"></i> 16/11</td>
+                                    <td>Internet Fibra</td>
+                                    <td class="text-end text-danger fw-bold">R$ 199,90</td>
                                 </tr>
-                                {% else %}
                                 <tr>
-                                    <td colspan="5" class="text-center p-4">Nenhuma consulta encontrada no banco de
-                                        dados.</td>
+                                    <td><i class="fas fa-times-circle text-danger me-2"></i> 20/11</td>
+                                    <td>Fornecedor Médico</td>
+                                    <td class="text-end text-danger fw-bold">R$ 1.250,00</td>
                                 </tr>
-                                {% endfor %}
                             </tbody>
                         </table>
                     </div>
                 </div>
-            </main>
+                <div class="col-md-6">
+                    <div class="card-custom">
+                        <h6 class="text-secondary fw-bold mb-3">Contas a Receber</h6>
+                        <table class="table table-hover table-finance mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Descrição</th>
+                                    <th class="text-end">Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><i class="fas fa-check-circle text-success me-2"></i> 12/11</td>
+                                    <td>Plano de Saúde</td>
+                                    <td class="text-end text-success fw-bold">R$ 3.550,00</td>
+                                </tr>
+                                <tr>
+                                    <td><i class="fas fa-check-circle text-success me-2"></i> 13/11</td>
+                                    <td>Consulta Maria Becker</td>
+                                    <td class="text-end text-success fw-bold">R$ 250,00</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+
+    <div class="modal fade" id="modalAgendar" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold"><i class="far fa-calendar-plus me-2"></i>Agendar Consulta</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="/cadastrar" method="POST">
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-secondary">NOME DO PACIENTE</label>
+                            <input type="text" name="nome" class="form-control" required placeholder="Nome completo">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small fw-bold text-secondary">ESPECIALIDADE</label>
+                                <select name="especialidade" class="form-select">
+                                    <option>Clínico Geral</option>
+                                    <option>Cardiologia</option>
+                                    <option>Pediatria</option>
+                                    <option>Dermatologia</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small fw-bold text-secondary">HORÁRIO</label>
+                                <input type="time" name="horario" class="form-control" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light">
+                        <button type="button" class="btn btn-outline-secondary"
+                            data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary px-4 fw-bold">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // Formatar Data
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        let d = new Date().toLocaleDateString('pt-BR', options);
+        document.getElementById('data-atual').innerText = d.charAt(0).toUpperCase() + d.slice(1);
+
+        // Gráfico Rosca
+        new Chart(document.getElementById('chartConvenio'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Particular', 'Amil', 'Unimed', 'Outros'],
+                datasets: [{
+                    data: [30, 40, 20, 10],
+                    backgroundColor: ['#1f7ae0', '#85c1e9', '#f7dc6f', '#e59866'],
+                    borderWidth: 0
+                }]
+            },
+            options: { plugins: { legend: { position: 'right', labels: { usePointStyle: true } } } }
+        });
+
+        // Gráfico Área
+        new Chart(document.getElementById('chartConsultas'), {
+            type: 'line',
+            data: {
+                labels: ['Out', 'Nov', 'Dez', 'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
+                datasets: [{
+                    label: 'Atendimentos',
+                    data: [50, 60, 45, 70, 65, 80, 55, 90, 75],
+                    fill: true,
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.15)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { borderDash: [5, 5] } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    </script>
 </body>
 
 </html>

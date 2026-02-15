@@ -1,69 +1,72 @@
-from flask import Flask, render_template, request, redirect, url_for, session
-import psycopg2
-from psycopg2.extras import RealDictCursor
 import os
+import psycopg2
+from flask import Flask, render_template, request, redirect, url_for
+from psycopg2.extras import RealDictCursor
 
 app = Flask(__name__)
-app.secret_key = 'healthflow-secret-key' # Necessário para usar session
 
-# Configurações de conexão via variáveis de ambiente (EKS)
-DB_HOST = os.getenv('DB_HOST')
-DB_NAME = os.getenv('DB_NAME', 'healthflowdb')
-DB_USER = os.getenv('DB_USER', 'dbadmin')
-DB_PASS = os.getenv('DB_PASS', 'Password123!')
-
+# --- CONFIGURAÇÃO DO BANCO DE DADOS ---
 def get_db_connection():
-    return psycopg2.connect(
-        host=DB_HOST,
-        database=DB_NAME,
-        user=DB_USER,
-        password=DB_PASS
+    """Estabelece a conexão com o banco RDS usando variáveis de ambiente."""
+    conn = psycopg2.connect(
+        host=os.environ.get('DB_HOST'),
+        database=os.environ.get('DB_NAME'),
+        user=os.environ.get('DB_USER'),
+        password=os.environ.get('DB_PASS'),
+        port=5432
     )
+    return conn
+
+def init_db():
+    """Inicializa as tabelas necessárias no banco de dados se não existirem."""
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        # 1. Tabela de Consultas (Para o Dashboard)
+        # Mantemos simples para o lab: apenas horário (sem data específica)
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS consultas (
+                id SERIAL PRIMARY KEY,
+                nome VARCHAR(100) NOT NULL,
+                especialidade VARCHAR(100) NOT NULL,
+                horario VARCHAR(20) NOT NULL,
+                status VARCHAR(20) DEFAULT 'Pendente'
+            );
+        """)
+        
+        # 2. Tabela de Usuários (Para Login e Cadastro Completo)
+        # Contém todos os campos do formulário novo
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS usuarios (
+                id SERIAL PRIMARY KEY,
+                nome_completo VARCHAR(150) NOT NULL,
+                email VARCHAR(100) UNIQUE NOT NULL,
+                cpf VARCHAR(20) UNIQUE NOT NULL,
+                telefone VARCHAR(20),
+                cep VARCHAR(15),
+                rua VARCHAR(150),
+                numero VARCHAR(20),
+                complemento VARCHAR(100),
+                senha VARCHAR(100) NOT NULL
+            );
+        """)
+        
+        conn.commit()
+        cur.close()
+        conn.close()
+        print("✅ Banco de dados inicializado com sucesso!")
+    except Exception as e:
+        print(f"❌ Erro ao inicializar banco: {e}")
+
+# --- ROTAS DE NAVEGAÇÃO E LOGIN ---
 
 @app.route('/')
-def login_page():
+def index():
     return render_template('login.html')
 
 @app.route('/auth', methods=['POST'])
 def auth():
-    usuario = request.form.get('usuario')
-    senha = request.form.get('senha')
-    # Autenticação simples para o bootcamp
-    if usuario == "admin" and senha == "Password123!":
-        session['logado'] = True
-        return redirect(url_for('dashboard'))
-    return redirect(url_for('login_page', erro="1"))
-
-@app.route('/cadastrar', methods=['POST'])
-def cadastrar():
-    nome = request.form.get('nome')
-    especialidade = request.form.get('especialidade')
-    horario = request.form.get('horario')
-    
-    conn = get_db_connection()
-    cur = conn.cursor()
-    cur.execute(
-        "INSERT INTO consultas (nome, especialidade, horario, status) VALUES (%s, %s, %s, %s)",
-        (nome, especialidade, horario, 'Pendente')
-    )
-    conn.commit()
-    cur.close()
-    conn.close()
-    return redirect(url_for('login_page', msg="sucesso"))
-
-@app.route('/dashboard')
-def dashboard():
-    if not session.get('logado'):
-        return redirect(url_for('login_page'))
-    
-    conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("SELECT * FROM consultas ORDER BY horario ASC")
-    consultas = cur.fetchall()
-    cur.close()
-    conn.close()
-    
-    return render_template('dashboard.html', consultas=consultas)
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    """Verifica o login do usuário (Admin ou Usuário do Banco)"""
+    usuario_input = request.form.get('usuario') 
+    senha_input

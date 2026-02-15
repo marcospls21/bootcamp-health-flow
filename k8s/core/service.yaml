@@ -6,8 +6,8 @@ metadata:
 spec:
   type: LoadBalancer
   selector:
-    app: core-app
+    app: core-app # Deve ser igual ao label do seu deployment
   ports:
     - protocol: TCP
-      port: 80         # Porta que você digita no navegador (padrão)
-      targetPort: 5000 # Porta que o seu app.py está ouvindo
+      port: 80         # Porta externa
+      targetPort: 5000 # Porta interna do Flask
