@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: video-app
-  namespace: health-video
+  namespace: health-video  # O namespace que você está usando
   labels:
     app: video-app
 spec:
@@ -17,6 +17,10 @@ spec:
     spec:
       containers:
       - name: video-app
-        image: nginx:alpine # Usamos Nginx genérico só pra testar
+        image: marcospls/video-app:latest  # <--- ATENÇÃO: Verifique o nome da imagem
         ports:
         - containerPort: 80
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "200m"
