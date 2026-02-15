@@ -1,44 +1,84 @@
-# 🏥 HealthFlow - DevOps & SRE Cloud Lab
+# 🏥 HealthFlow - Plataforma de Telemedicina & Gestão Hospitalar (DevOps/SRE Lab)
 
-**HealthFlow** é uma plataforma de gestão de saúde digital *Cloud Native*. Este laboratório simula um ambiente real de **Engenharia de Software e SRE**, demonstrando a migração de sistemas, orquestração de contêineres e telemedicina.
+![AWS](https://img.shields.io/badge/AWS-232F3E?style=for-the-badge&logo=amazon-aws&logoColor=white)
+![Kubernetes](https://img.shields.io/badge/kubernetes-%23326ce5.svg?style=for-the-badge&logo=kubernetes&logoColor=white)
+![Terraform](https://img.shields.io/badge/terraform-%235835CC.svg?style=for-the-badge&logo=terraform&logoColor=white)
+![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
 
-O projeto implementa uma arquitetura de microsserviços rodando no **AWS EKS (Kubernetes)**, com banco de dados gerenciado **RDS (PostgreSQL)** e pipelines de CI/CD modernos.
+## 📋 Sobre o Projeto
 
----
+O **HealthFlow** é uma solução completa de infraestrutura moderna simulando um ambiente real de HealthTech. O projeto demonstra a migração de aplicações para **Microserviços**, orquestração com **Kubernetes (EKS)**, pipeline de **CI/CD** e práticas de **SRE (Site Reliability Engineering)**.
 
-## 🏗️ Arquitetura e Componentes
-
-O sistema é composto por microsserviços independentes e ferramentas de observabilidade:
-
-### 🧩 Microserviços:
-
-1. **Core App (Portal do Médico/Paciente):**
-* Aplicação em **Python (Flask)**.
-* Funcionalidades: Login seguro, Cadastro de Pacientes (com endereço/CPF), Agendamento de Consultas e Dashboard Financeiro.
-* Persistência: Conecta-se ao **Amazon RDS** (PostgreSQL).
-
-
-2. **Video App (Telemedicina):**
-* Aplicação Frontend em **Nginx** + **Jitsi Meet API**.
-* Funcionalidades: Salas de videoconferência seguras e dinâmicas criadas automaticamente para cada consulta.
-
-
-
-### ☁️ Infraestrutura & Ferramentas:
-
-* **IaC:** **Terraform** (Provisiona VPC, EKS, RDS, Security Groups e Helm Releases).
-* **Orquestração:** **AWS EKS** (Kubernetes 1.32).
-* **GitOps:** **ArgoCD** (Sincronização contínua do estado do cluster).
-* **Observabilidade:** **Prometheus & Grafana** (Métricas de infra e aplicação).
-* **CI/CD:** **GitHub Actions** (Build, Security Scan e Push para Docker Hub).
+A plataforma consiste em:
+1.  **Core App (Dashboard):** Gestão de pacientes, médicos e agendamentos (Python/Flask + PostgreSQL RDS).
+2.  **Video App (Telemedicina):** Sala de conferência segura e criptografada via WebRTC (Jitsi API + Nginx Alpine).
 
 ---
 
-## ⚙️ Guia de Configuração (Passo a Passo)
+## 🏗️ Arquitetura e Tecnologias
 
-### 1. Provisionar Infraestrutura (Terraform)
+O projeto foi construído seguindo os pilares do **Well-Architected Framework**:
 
-Navegue até a pasta `terraform` e inicie o ambiente. Isso criará o cluster EKS e o banco RDS.
+* **Cloud Provider:** AWS (VPC, EKS, RDS, Load Balancers).
+* **IaC (Infra as Code):** Terraform modularizado.
+* **Containerização:** Docker (Imagens otimizadas Alpine).
+* **Orquestração:** Kubernetes (Deployments, Services, Ingress).
+* **GitOps & CI/CD:** GitHub Actions (Build & Push) + ArgoCD (Sync).
+* **Banco de Dados:** PostgreSQL (Gerenciado via AWS RDS).
+
+---
+
+## 🚀 Melhorias e Fixes Implementados (SRE Log)
+
+Durante o desenvolvimento, diversos desafios de infraestrutura foram superados:
+
+### 1. Aplicação de Vídeo (Telemedicina Real-Time)
+* **Problema:** A versão antiga era estática.
+* **Solução:** Reescrita total do Frontend (`src/video-app`) integrando a API **WebRTC do Jitsi Meet**.
+* **Security Fix:** Implementação de tratamento para bloqueios de navegador (Chrome/Edge) em ambientes HTTP (AWS LoadBalancer), forçando flags de origem insegura ou tunelamento via `localhost`.
+
+### 2. Banco de Dados e Persistência
+* **Problema:** Erro `Relation does not exist` e `Connection Refused` nos Pods.
+* **Solução:** * Criação de script SQL robusto para inicialização de tabelas (`consultas`, `usuarios`) com cláusulas `IF NOT EXISTS`.
+    * Implementação de lógica de `Retry` e variáveis de ambiente no Python para conexão resiliente com o RDS.
+
+### 3. Terraform Deadlock (Destruição)
+* **Problema:** O `terraform destroy` falhava com `DependencyViolation` porque o Kubernetes criava LoadBalancers que o Terraform desconhecia.
+* **Solução (Automação):** Criação de um script de **"Cleanup Pré-Destroy"** no Pipeline.
+    * O script conecta no cluster EKS antes da destruição.
+    * Remove forçadamente todos os `Service type: LoadBalancer`.
+    * Aguarda a liberação das ENIs (Interfaces de Rede) pela AWS.
+    * Executa o `terraform destroy` limpo.
+
+---
+
+## 📦 Estrutura do Projeto
+
+```bash
+.
+├── .github/workflows    # Pipelines de CI/CD (Build e Destroy)
+├── k8s                  # Manifestos Kubernetes (Deployment, Service)
+│   ├── core             # Aplicação Python (Dashboard)
+│   └── video            # Aplicação Nginx (Telemedicina)
+├── src                  # Código Fonte
+│   ├── core-app         # Backend Flask + Conectores DB
+│   └── video-app        # Frontend SPA + Dockerfile Alpine
+├── terraform            # Infraestrutura como Código (EKS, VPC, RDS)
+└── destroy.sh           # Script SRE de limpeza de recursos órfãos
+
+```
+
+---
+
+## 🛠️ Como Executar
+
+### Pré-requisitos
+
+* Conta AWS ativa.
+* Docker, Kubectl e Terraform instalados.
+
+### 1. Provisionando a Infra (Terraform)
 
 ```bash
 cd terraform
@@ -47,136 +87,46 @@ terraform apply -auto-approve
 
 ```
 
-* *Nota:* O processo leva cerca de **15 a 20 minutos**.
-* **Importante:** Atualize as variáveis no arquivo `terraform.tfvars` ou `main.tf` com seus ARNs do AWS Academy se necessário.
+### 2. Configurando o Banco de Dados
 
-### 2. Configurar o Banco de Dados (RDS)
+Conecte-se ao RDS criado (via DBeaver ou PgAdmin) e execute o script de inicialização localizado em `src/core-app/init.sql` para criar as tabelas `usuarios` e `consultas`.
 
-O `app.py` já possui um sistema de *Auto-Init*, mas para garantir a estrutura correta (ou resetar dados), conecte-se via **DBeaver** e rode:
+### 3. Deploy das Aplicações (ArgoCD ou Manual)
 
-```sql
--- Criação da Tabela de Usuários (Login/Cadastro)
-CREATE TABLE IF NOT EXISTS usuarios (
-    id SERIAL PRIMARY KEY,
-    nome_completo VARCHAR(150) NOT NULL,
-    email VARCHAR(100) UNIQUE NOT NULL,
-    cpf VARCHAR(20) UNIQUE NOT NULL,
-    telefone VARCHAR(20),
-    cep VARCHAR(15),
-    rua VARCHAR(150),
-    numero VARCHAR(20),
-    complemento VARCHAR(100),
-    senha VARCHAR(100) NOT NULL
-);
-
--- Criação da Tabela de Consultas (Dashboard)
-CREATE TABLE IF NOT EXISTS consultas (
-    id SERIAL PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL,
-    especialidade VARCHAR(100) NOT NULL,
-    horario VARCHAR(20) NOT NULL,
-    status VARCHAR(20) DEFAULT 'Pendente'
-);
+```bash
+# Aplica os manifestos
+kubectl apply -f k8s/core/
+kubectl apply -f k8s/video/
 
 ```
 
-### 3. Deploy das Aplicações (GitOps)
+### 4. Acessando a Telemedicina (Fix de Navegador)
 
-Após o Terraform finalizar, conecte-se ao cluster e aplique o manifesto mestre do ArgoCD:
+Como o LoadBalancer da AWS Academy é HTTP, habilite a flag de segurança no Chrome para testar a câmera:
+
+1. Acesse `chrome://flags/#unsafely-treat-insecure-origin-as-secure`
+2. Adicione a URL do seu LoadBalancer.
+3. Clique em "Enabled" e reinicie o navegador.
+
+---
+
+## 🧹 Destruição do Ambiente (Importante)
+
+Para evitar custos e erros de dependência, utilize o script automatizado que limpa os Load Balancers antes de destruir a VPC:
 
 ```bash
-# Atualizar Kubeconfig
-aws eks update-kubeconfig --region us-east-1 --name health-flow-cluster
-
-# Aplicar App of Apps
-kubectl apply -f argo-applications.yaml
+chmod +x destroy.sh
+./destroy.sh
 
 ```
 
 ---
 
-## 🌐 Acessando o Sistema
+## 👨‍💻 Autor
 
-Utilize os comandos abaixo para obter as URLs públicas (LoadBalancers) geradas pela AWS.
-
-### 1. 🏥 Portal Principal (HealthFlow)
-
-Acesse para realizar Login, Cadastro de Pacientes e ver o Dashboard.
-
-```bash
-kubectl get svc core-service -n health-core -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+**Marcos** - *DevOps & SRE Engineer*
+Projeto desenvolvido como parte do Bootcamp de Engenharia de Confiabilidade.
 
 ```
 
-* **Login Admin:** `admin` / `Password123!`
-* **Login Paciente:** Utilize os dados criados na tela "Criar Nova Conta".
-
-### 2. 📹 Serviço de Telemedicina (Video App)
-
-Este serviço é chamado automaticamente pelo botão **"Chamar"** no Dashboard, mas pode ser testado diretamente:
-
-```bash
-kubectl get svc video-service -n video-app -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
-
 ```
-
-### 3. 🐙 ArgoCD (Gestão de Deploy)
-
-```bash
-# URL
-kubectl get svc argocd-server -n argocd -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
-
-# Senha (Usuário: admin)
-kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
-
-```
-
-### 4. 📊 Grafana (Monitoramento)
-
-```bash
-# URL
-kubectl get svc prometheus-stack-grafana -n monitoring -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
-
-# Senha (Usuário: admin)
-kubectl get secret --namespace monitoring prometheus-stack-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
-
-```
-
----
-
-## 📂 Estrutura do Repositório
-
-```text
-.
-├── .github/workflows/      # Pipelines de CI (Build & Security)
-├── argo-applications.yaml  # Manifesto Mestre (GitOps)
-├── k8s/
-│   ├── core/               # Manifestos do App Principal (Flask)
-│   ├── video/              # Manifestos da Telemedicina (Nginx)
-├── src/
-│   ├── core-app/           # Código Python (Flask + Templates Jinja2)
-│   └── video/              # Código Frontend (HTML + Jitsi API)
-├── terraform/              # Infraestrutura como Código (AWS)
-└── README.md               # Documentação Oficial
-
-```
-
----
-
-## ⚠️ Troubleshooting (Resolução de Problemas)
-
-* **Erro de "CrashLoopBackOff" no Core App:**
-* Verifique se as variáveis de ambiente do RDS (`DB_HOST`, `DB_USER`) foram injetadas corretamente no Pod.
-* Confirme se a senha do banco no `app.py` bate com a do Terraform.
-
-
-* **Site não abre (Timeout):**
-* Verifique o **Security Group** dos *Worker Nodes* na AWS. Garanta que há uma regra de entrada liberando **Porta 80** para `0.0.0.0/0`.
-
-
-* **Câmera/Microfone bloqueados no Vídeo:**
-* Como o AWS Academy usa HTTP por padrão, o navegador pode bloquear dispositivos. Clique no ícone de "cadeado/inseguro" na barra de endereço e **permita** o uso de câmera/microfone para o site.
-
-
-* **Erro de Conexão com Banco (DBeaver):**
-* Certifique-se de usar o **Endpoint do RDS** e não o IP interno. O Security Group deve permitir a porta **5432** para o seu IP.
