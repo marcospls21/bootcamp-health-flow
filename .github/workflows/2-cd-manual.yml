@@ -1,15 +1,71 @@
-# ... (após o Passo 1 de Apply Infra Core)
+name: 2. CD - Infrastructure (Auto-Fix)
 
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Ação do Terraform'
+        required: true
+        default: 'apply'
+        type: choice
+        options:
+        - apply
+        - destroy
+
+jobs:
+  terraform-manager:
+    name: 🏗️ Terraform Infrastructure
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
+      AWS_REGION: us-east-1
+
+    steps:
+      - name: Checkout do Código
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: ./terraform
+
+      # ======================================================
+      # ESTRATÉGIA DE APPLY EM DUAS ETAPAS
+      # ======================================================
+      
+      # PASSO 1: Cria apenas a infraestrutura física (VPC e EKS)
+      - name: 1️⃣ Terraform Apply - Infra Core (VPC + EKS)
+        if: ${{ inputs.action == 'apply' }}
+        run: |
+          echo "🚧 Criando Cluster EKS e Rede primeiro..."
+          terraform apply -target=module.vpc -target=aws_eks_cluster.this -target=aws_eks_node_group.this -auto-approve
+        working-directory: ./terraform
+
+      # PASSO INTERMEDIÁRIO: Atualiza o contexto do Kubernetes para o Runner
       - name: 🛰️ Update Kubeconfig
         if: ${{ inputs.action == 'apply' }}
         run: |
-          aws eks update-kubeconfig --region us-east-1 --name ${{ secrets.EKS_CLUSTER_NAME }} 
-          # Substitua o nome acima pelo nome real do seu cluster se for fixo
+          # Usamos o nome fixo que está no seu main.tf para evitar erros de secret
+          aws eks update-kubeconfig --region us-east-1 --name health-flow-cluster
 
-      # PASSO 2: Agora o Terraform terá o contexto correto para o kubectl
+      # PASSO 2: Instala todo o resto (Helm, ArgoCD, Apps)
       - name: 2️⃣ Terraform Apply - Full Stack (Apps & Monitoring)
         if: ${{ inputs.action == 'apply' }}
         run: |
           echo "🚀 Instalando Aplicações e Monitoramento..."
           terraform apply -auto-approve
+        working-directory: ./terraform
+
+      # ======================================================
+      # ESTRATÉGIA DE DESTROY
+      # ======================================================
+      - name: 🧨 Terraform Destroy
+        if: ${{ inputs.action == 'destroy' }}
+        run: terraform destroy -auto-approve
         working-directory: ./terraform

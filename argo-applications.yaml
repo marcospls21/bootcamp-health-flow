@@ -6,6 +6,7 @@ metadata:
 spec:
   project: default
   source:
+    # SUBSTITUA pela URL do seu repositório
     repoURL: 'https://github.com/marcospls21/bootcamp-health-flow'
     targetRevision: main
     path: k8s/core
@@ -48,11 +49,13 @@ spec:
   source:
     repoURL: 'https://github.com/marcospls21/bootcamp-health-flow'
     targetRevision: main
-    path: k8s/video-app
+    path: k8s/video
   destination:
     server: 'https://kubernetes.default.svc'
-    namespace: health-core
+    namespace: health-video
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

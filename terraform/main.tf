@@ -1,9 +1,10 @@
+# --- DADOS E CONTEXTO ---
 data "aws_availability_zones" "available" {}
 data "aws_caller_identity" "current" {}
 
-# --- DEFINIÇÃO DAS ROLES ---
+# --- DEFINIÇÃO DAS ROLES (AWS Academy) ---
 locals {
-  # ARNs do Academy
+  # ARNs fornecidos pelo ambiente Lab
   cluster_role_arn = "arn:aws:iam::074442581040:role/c196815a5042644l13691097t1w074442-LabEksClusterRole-z4U15qTttNJF"
   node_role_arn    = "arn:aws:iam::074442581040:role/c196815a5042644l13691097t1w074442581-LabEksNodeRole-gSRwpwgLZvgg"
 }
@@ -31,7 +32,7 @@ module "vpc" {
 resource "aws_security_group" "db_sg" {
   name        = "health-flow-db-sg"
   description = "Permite acesso ao RDS"
-  vpc_id      = module.vpc.vpc_id # Garante a VPC certa
+  vpc_id      = module.vpc.vpc_id
 
   ingress {
     from_port   = 5432
@@ -103,7 +104,6 @@ module "db" {
   manage_master_user_password = false
   password                    = "Password123!"
 
-  # Força a criação do grupo de subnets para evitar usar o default da VPC errada
   create_db_subnet_group = true
   subnet_ids             = module.vpc.public_subnets
   vpc_security_group_ids = [aws_security_group.db_sg.id]
@@ -112,7 +112,7 @@ module "db" {
   skip_final_snapshot = true
 }
 
-# --- HELM: Ingress ---
+# --- HELM: Ingress Nginx ---
 resource "helm_release" "nginx_ingress" {
   name             = "nginx-ingress"
   repository       = "https://kubernetes.github.io/ingress-nginx"
@@ -146,7 +146,7 @@ resource "helm_release" "argocd" {
   }
 }
 
-# Stack de Observabilidade (Prometheus + Grafana)
+# --- HELM: Stack de Observabilidade (Prometheus + Grafana) ---
 resource "helm_release" "kube_prometheus_stack" {
   name             = "prometheus-stack"
   repository       = "https://prometheus-community.github.io/helm-charts"
@@ -156,45 +156,44 @@ resource "helm_release" "kube_prometheus_stack" {
 
   set {
     name  = "grafana.service.type"
-    value = "LoadBalancer" # Para você acessar externo
+    value = "LoadBalancer"
   }
 }
 
+# --- HELM: Loki (Logs) ---
 resource "helm_release" "loki_stack" {
   name             = "loki"
   repository       = "https://grafana.github.io/helm-charts"
   chart            = "loki-stack"
   namespace        = "monitoring"
-  create_namespace = true # <--- ESSENCIAL: Cria o namespace se ele não existir
+  create_namespace = true
 
-  # Garante que tenta instalar só depois que o Prometheus (que também usa esse namespace) for processado
   depends_on = [
     helm_release.kube_prometheus_stack
   ]
 }
 
-# --- DEPLOY APPS (Com criação de Namespace) ---
-resource "null_resource" "deploy_apps" {
-  depends_on = [helm_release.argocd]
+# --- ARGOCD APPLICATIONS DEPLOY ---
 
-  provisioner "local-exec" {
-    # Adicionado 'kubectl create ns' para corrigir o erro 'namespace not found'
-    command = <<EOT
-      aws eks update-kubeconfig --region us-east-1 --name ${aws_eks_cluster.this.name}
-      kubectl create namespace health-core || true
-      kubectl create namespace health-video || true
-      kubectl apply -f ../k8s/core/
-      kubectl apply -f ../k8s/video/
-    EOT
-  }
+# 1. Processador de documentos para arquivos com separador "---"
+data "kubectl_file_documents" "argo_docs" {
+  content = file("${path.module}/../argo-applications.yaml")
 }
 
-provider "kubectl" {
-  # ... configurações de auth iguais ao provider kubernetes
-}
-
+# 2. Deploy das Apps via ArgoCD
 resource "kubectl_manifest" "argocd_apps" {
-  # Lê o arquivo da raiz do projeto e aplica
-  yaml_body  = file("${path.module}/../argo-applications.yaml")
-  depends_on = [helm_release.argocd]
+  for_each  = data.kubectl_file_documents.argo_docs.manifests
+  yaml_body = each.value
+
+  # Garante que as aplicações só tentem subir após o ArgoCD e os Nodes estarem prontos
+  depends_on = [
+    aws_eks_node_group.this,
+    helm_release.argocd
+  ]
+}
+
+# --- NAMESPACES ADICIONAIS ---
+resource "kubernetes_namespace" "health_core" {
+  metadata { name = "health-core" }
+  depends_on = [aws_eks_node_group.this]
 }
