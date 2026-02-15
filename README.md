@@ -1,26 +1,38 @@
+Aqui está o seu `README.md` totalmente atualizado! 🚀
+
+Adicionei as novas funcionalidades (Login, Dashboard, Banco de Dados RDS), as ferramentas de monitoramento (Grafana/Prometheus) e os comandos exatos que usamos para recuperar as senhas e URLs.
+
+---
+
 # 🏥 HealthFlow - DevOps & SRE Cloud Lab
 
 O **HealthFlow** é uma plataforma de gestão de saúde digital simulada. Este laboratório demonstra um ciclo de vida moderno de Engenharia de Software e Cloud, migrando de uma mentalidade legada para **Cloud Native**.
 
-O projeto implementa **Infraestrutura como Código (IaC)**, **GitOps**, **Containerização**, **Orquestração** e **Observabilidade Avançada**, rodando nas restrições do **AWS Academy**.
+O projeto vai além do básico, implementando um **Portal do Paciente** completo com autenticação, banco de dados relacional e painéis administrativos, tudo rodando sobre Kubernetes.
 
 ---
 
 ## 🏗️ Arquitetura e Componentes
 
-O projeto utiliza uma arquitetura de microsserviços sobre Kubernetes (EKS).
+O projeto utiliza uma arquitetura de microsserviços sobre Kubernetes (EKS) com persistência de dados gerenciada.
 
-### Microserviços:
+### 🧩 Microserviços & Aplicações:
 
-1. **Core App:** Aplicação principal em Python (Flask) para gestão de pacientes.
+1. **Core App (Portal):** Aplicação Python (Flask) com:
+* Tela de Login e Cadastro de Pacientes.
+* **Dashboard Administrativo** para gestão de consultas.
+* Conexão com Banco de Dados PostgreSQL.
+
+
 2. **Apresentação:** Aplicação Nginx servindo o deck executivo e vídeo de demonstração do projeto.
 
-### Infraestrutura & Ferramentas:
+### ☁️ Infraestrutura & Ferramentas:
 
 * **Orquestração:** AWS EKS (Kubernetes).
-* **GitOps:** ArgoCD sincronizando o estado do cluster com este repositório.
-* **IaC:** Terraform provisionando VPC, EKS, Nodes e Helm Charts.
-* **Observabilidade:** Datadog (Métricas, Logs e APM).
+* **Banco de Dados:** Amazon RDS (PostgreSQL) provisionado via Terraform.
+* **GitOps:** ArgoCD sincronizando o estado do cluster com o Git.
+* **IaC:** Terraform provisionando VPC, EKS, RDS, Security Groups e Helm Charts.
+* **Observabilidade:** Prometheus & Grafana (Stack de Monitoramento).
 * **CI/CD:** GitHub Actions (Security Scan, Build Docker, Deploy Infra).
 
 ---
@@ -50,23 +62,11 @@ Em **Settings > Secrets and variables > Actions**, adicione:
 | `AWS_SESSION_TOKEN` | Do AWS Academy (**Renovar a cada 4h**). |
 | `DOCKER_USERNAME` | Seu usuário Docker Hub. |
 | `DOCKER_PASSWORD` | Senha/Token Docker Hub. |
-| `TF_VAR_datadog_api_key` | API Key do Datadog. |
 
-### 3. Ajustar Variáveis do Terraform
+### 3. Ajustar Variáveis
 
-* **`terraform/main.tf`**: Atualize os ARNs das Roles (`LabEksClusterRole` e `LabEksNodeRole`).
 * **`terraform/variables.tf`**: Atualize a `repo_url` para o seu GitHub.
-
-### 4. Ajustar Imagens Docker (Manifestos)
-
-Nos arquivos `k8s/core/deployment.yaml` e `k8s/apresentacao/deployment.yaml`, altere a imagem para o seu usuário:
-
-```yaml
-image: SEU_USUARIO_DOCKER/health-core:latest
-# e
-image: SEU_USUARIO_DOCKER/health-apresentacao:latest
-
-```
+* **`k8s/core/deployment.yaml`**: Verifique se a imagem Docker aponta para o seu usuário (`SEU_USER/health-core:latest`).
 
 ---
 
@@ -74,7 +74,10 @@ image: SEU_USUARIO_DOCKER/health-apresentacao:latest
 
 1. Vá na aba **Actions** do GitHub e dispare o workflow **🧪 Lab Lifecycle**.
 2. Aguarde o pipeline finalizar (Build das imagens + Terraform Apply).
-3. Atualize suas credenciais locais:
+* *Nota:* A criação do RDS pode levar cerca de 10-15 minutos.
+
+
+3. Atualize suas credenciais locais para acessar o cluster:
 ```bash
 aws eks update-kubeconfig --region us-east-1 --name health-flow-cluster
 
@@ -84,110 +87,69 @@ aws eks update-kubeconfig --region us-east-1 --name health-flow-cluster
 
 ---
 
-## 🐙 Configurando o GitOps (ArgoCD)
+## 🌐 Acessando as Aplicações e Ferramentas
 
-Para subir todas as aplicações (Core e Apresentação) de uma vez:
+Após o deploy, a AWS leva de **2 a 5 minutos** para propagar os DNS dos LoadBalancers. Se der erro de "Site não encontrado", aguarde um pouco.
 
-1. Garanta que o arquivo `argo-applications.yaml` na raiz está apontando para o seu repositório.
-2. Aplique o manifesto mestre:
+### 1. 🏥 Portal HealthFlow (Login & Dashboard)
+
+Acesse o sistema principal, faça login (`admin`/`Password123!`) ou cadastre novos pacientes.
+
+* **Obter URL:**
 ```bash
-kubectl apply -f argo-applications.yaml
+kubectl get svc core-service -n health-core -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
 
 ```
 
 
-3. O ArgoCD detectará as pastas `k8s/core` e `k8s/apresentacao` e fará o deploy automático.
 
----
+### 2. 🐙 ArgoCD (GitOps)
 
-## 🌐 Acessando a Aplicação (HealthFlow)
+Gerenciamento contínuo do deploy.
 
-Após o Terraform finalizar (aprox. 15 min), atualize suas credenciais locais:
-
+* **Obter URL:**
 ```bash
-aws eks update-kubeconfig --region us-east-1 --name health-flow-cluster
-
-```
-
-### 🚨 Passo Importante: Liberar Acesso Externo (Security Group)
-
-Para que o LoadBalancer (Link Público) funcione na sua rede doméstica, você deve liberar o Firewall dos nós na AWS. **Sem isso, o site não abrirá.**
-
-1. Acesse o **Console AWS** -> **EC2**.
-2. No menu lateral esquerdo, vá em **Security Groups**.
-3. Você verá alguns grupos. Procure por um que tenha no nome algo como `eks-cluster-sg-health-flow-cluster`.
-* *Dica:* Geralmente é o Security Group que está associado às suas instâncias EC2 (Nodes). Você pode confirmar indo em Instances, clicando em um node e vendo qual Security Group ele usa na aba "Security".
-
-
-4. Selecione-o e clique na aba inferior **Inbound rules** -> **Edit inbound rules**.
-5. Adicione a seguinte regra:
-* **Type:** `All traffic` (ou HTTP/HTTPS)
-* **Source:** `Anywhere-IPv4` `0.0.0.0/0` (Qualquer lugar).
-
-
-6. Clique em **Save rules**.
-
-### Opção A: LoadBalancer (Link Público - Recomendado)
-
-Acessível de qualquer lugar. **Consome créditos da AWS.**
-
-1. **Transforme o serviço:**
-```bash
-kubectl patch svc core-service -n health-core -p '{"spec": {"type": "LoadBalancer"}}'
+kubectl get svc argocd-server -n argocd -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
 
 ```
 
 
-2. **Pegue o Link:**
+* **Obter Senha (Usuário: `admin`):**
 ```bash
-kubectl get svc core-service -n health-core --output jsonpath='{.status.loadBalancer.ingress[0].hostname}'
-
-```
-
-
-3. **Acesse:** Copie o endereço (ex: `a83...elb.amazonaws.com`) e cole no navegador.
-* *Nota:* Pode levar 2-5 minutos para o link funcionar na primeira vez.
-
-
-
-### Opção B: Port-Forward (Econômica)
-
-Acessível apenas da sua máquina local. Não precisa alterar Security Group.
-
-```bash
-kubectl port-forward svc/core-service -n health-core 9090:80
-
-```
-
-Acesse: [http://localhost:9090](https://www.google.com/search?q=http://localhost:9090)
-
----
-
-*Copie a URL e acesse no navegador.*
-
-### 2. Aplicação Apresentação (Slides & Vídeo)
-
-Acesse a apresentação executiva e o vídeo de demonstração:
-
-```bash
-kubectl get svc apresentacao-service -n health-core --output jsonpath='{.status.loadBalancer.ingress[0].hostname}'
-
-```
-
-*Copie a URL e acesse no navegador.*
-
-### 3. Painel do ArgoCD
-
-Para ver o estado do GitOps e sincronização:
-
-```bash
-# Pegar senha
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
 
-# Pegar URL (Se tiver criado LoadBalancer para ele)
-kubectl get svc argocd-server -n argocd --output jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+```
+
+
+
+### 3. 📊 Grafana (Observabilidade)
+
+Dashboards de métricas do cluster e dos pods.
+
+* **Obter URL:**
+```bash
+kubectl get svc prometheus-stack-grafana -n monitoring -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
 
 ```
+
+
+* **Obter Senha (Usuário: `admin`):**
+```bash
+kubectl get secret --namespace monitoring prometheus-stack-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
+
+```
+
+
+
+### 4. 📺 Apresentação (Vídeo)
+
+* **Obter URL:**
+```bash
+kubectl get svc video-service -n health-video -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+
+```
+
+
 
 ---
 
@@ -195,27 +157,32 @@ kubectl get svc argocd-server -n argocd --output jsonpath='{.status.loadBalancer
 
 ```text
 .
-├── .github/workflows/
-│   └── lab-lifecycle.yml  # Pipeline (Security > Build > Deploy)
-├── argo-applications.yaml # Manifesto "App of Apps" do ArgoCD
+├── .github/workflows/     # Pipeline CI/CD
+├── argo-applications.yaml # Manifesto Mestre do ArgoCD
 ├── k8s/
-│   ├── core/              # Manifestos do App Core
-│   └── apresentacao/      # Manifestos da Apresentação [NOVO]
+│   ├── core/              # Manifestos do App Principal (com Env Vars do BD)
+│   ├── video/             # Manifestos da Apresentação
 ├── src/
-│   ├── core-app/          # Código Python (Flask)
-│   └── apresentacao/      # Código HTML/Vídeo + Dockerfile [NOVO]
-├── terraform/             # Código IaC (EKS, VPC, Helm)
-├── qodana.yaml            # Verificação de código
-├── tryvi                  # Scan de vulnerabilidade
+│   ├── core-app/          # Python Flask + HTML Templates (Login/Dash)
+│   └── video/             # Nginx + Vídeo Estático
+├── terraform/             # IaC (EKS, VPC, RDS, Helm)
 └── README.md              # Documentação
-
 
 ```
 
 ---
 
-## ⚠️ Troubleshooting
+## ⚠️ Troubleshooting (Resolução de Problemas)
 
-* **Apresentação sem vídeo:** Verifique se o arquivo `arquitetura.mp4` está na pasta `src/apresentacao` antes do commit. O Dockerfile precisa da instrução `COPY` correta.
-* **Site não abre (Timeout):** Verifique o **Security Group** dos Worker Nodes no Console EC2. Garanta que há uma regra de entrada liberando tráfego de `0.0.0.0/0`.
-* **Erro 403 no Terraform:** Suas credenciais do AWS Academy expiraram. Gere novas no portal e atualize as Secrets do GitHub.
+* **Erro `spec.selector: field is immutable` no ArgoCD:**
+* Isso ocorre se você mudou as labels do Deployment.
+* **Solução:** No ArgoCD, clique em **Sync**, selecione a opção **Replace** e confirme. Isso força a recriação do recurso.
+
+
+* **Site não abre (Timeout):**
+* Verifique o **Security Group** dos Worker Nodes no Console EC2. Garanta que há uma regra de entrada liberando tráfego de `0.0.0.0/0` para "All Traffic".
+
+
+* **Erro de Conexão com Banco de Dados:**
+* Verifique se as variáveis de ambiente (`DB_HOST`) foram injetadas corretamente no Pod: `kubectl describe pod -n health-core`.
+* Confirme se o Security Group do RDS permite conexão vinda do Security Group do EKS (Porta 5432).

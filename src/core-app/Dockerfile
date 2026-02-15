@@ -1,17 +1,12 @@
-FROM python:3.11-slim
+FROM python:3.9-slim
+
+# Instala dependências de sistema para o PostgreSQL
+RUN apt-get update && apt-get install -y libpq-dev gcc && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Instala o Flask
-RUN pip install flask
-
-# Copia o código da aplicação
-COPY app.py .
-
-# Copia a pasta de templates (HTMLs) para dentro da imagem
-COPY templates ./templates
-
-# Expõe a porta 80
-EXPOSE 80
+COPY . .
 
 CMD ["python", "app.py"]
