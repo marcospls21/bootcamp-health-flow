@@ -1,166 +1,163 @@
 # 🏥 HealthFlow - DevOps & SRE Cloud Lab
 
-O **HealthFlow** é uma plataforma de gestão de saúde digital simulada. Este laboratório demonstra um ciclo de vida moderno de Engenharia de Software e Cloud, migrando de uma mentalidade legada para **Cloud Native**.
+**HealthFlow** é uma plataforma de gestão de saúde digital *Cloud Native*. Este laboratório simula um ambiente real de **Engenharia de Software e SRE**, demonstrando a migração de sistemas, orquestração de contêineres e telemedicina.
 
-O projeto vai além do básico, implementando um **Portal do Paciente** completo com autenticação, banco de dados relacional e painéis administrativos, tudo rodando sobre Kubernetes.
+O projeto implementa uma arquitetura de microsserviços rodando no **AWS EKS (Kubernetes)**, com banco de dados gerenciado **RDS (PostgreSQL)** e pipelines de CI/CD modernos.
 
 ---
 
 ## 🏗️ Arquitetura e Componentes
 
-O projeto utiliza uma arquitetura de microsserviços sobre Kubernetes (EKS) com persistência de dados gerenciada.
+O sistema é composto por microsserviços independentes e ferramentas de observabilidade:
 
-### 🧩 Microserviços & Aplicações:
+### 🧩 Microserviços:
 
-1. **Core App (Portal):** Aplicação Python (Flask) com:
-* Tela de Login e Cadastro de Pacientes.
-* **Dashboard Administrativo** para gestão de consultas.
-* Conexão com Banco de Dados PostgreSQL.
+1. **Core App (Portal do Médico/Paciente):**
+* Aplicação em **Python (Flask)**.
+* Funcionalidades: Login seguro, Cadastro de Pacientes (com endereço/CPF), Agendamento de Consultas e Dashboard Financeiro.
+* Persistência: Conecta-se ao **Amazon RDS** (PostgreSQL).
 
 
-2. **Apresentação:** Aplicação Nginx servindo o deck executivo e vídeo de demonstração do projeto.
+2. **Video App (Telemedicina):**
+* Aplicação Frontend em **Nginx** + **Jitsi Meet API**.
+* Funcionalidades: Salas de videoconferência seguras e dinâmicas criadas automaticamente para cada consulta.
+
+
 
 ### ☁️ Infraestrutura & Ferramentas:
 
-* **Orquestração:** AWS EKS (Kubernetes).
-* **Banco de Dados:** Amazon RDS (PostgreSQL) provisionado via Terraform.
-* **GitOps:** ArgoCD sincronizando o estado do cluster com o Git.
-* **IaC:** Terraform provisionando VPC, EKS, RDS, Security Groups e Helm Charts.
-* **Observabilidade:** Prometheus & Grafana (Stack de Monitoramento).
-* **CI/CD:** GitHub Actions (Security Scan, Build Docker, Deploy Infra).
+* **IaC:** **Terraform** (Provisiona VPC, EKS, RDS, Security Groups e Helm Releases).
+* **Orquestração:** **AWS EKS** (Kubernetes 1.32).
+* **GitOps:** **ArgoCD** (Sincronização contínua do estado do cluster).
+* **Observabilidade:** **Prometheus & Grafana** (Métricas de infra e aplicação).
+* **CI/CD:** **GitHub Actions** (Build, Security Scan e Push para Docker Hub).
 
 ---
 
 ## ⚙️ Guia de Configuração (Passo a Passo)
 
-### 1. Configurar o Repositório Remoto (Git)
+### 1. Provisionar Infraestrutura (Terraform)
 
-Aponte o projeto para o seu GitHub para rodar as Actions:
+Navegue até a pasta `terraform` e inicie o ambiente. Isso criará o cluster EKS e o banco RDS.
 
 ```bash
-git remote remove origin
-git remote add origin https://github.com/SEU_USUARIO/NOME_DO_SEU_REPO.git
-git branch -M main
-git push -u origin main
+cd terraform
+terraform init
+terraform apply -auto-approve
 
 ```
 
-### 2. Configurar Segredos no GitHub
+* *Nota:* O processo leva cerca de **15 a 20 minutos**.
+* **Importante:** Atualize as variáveis no arquivo `terraform.tfvars` ou `main.tf` com seus ARNs do AWS Academy se necessário.
 
-Em **Settings > Secrets and variables > Actions**, adicione:
+### 2. Configurar o Banco de Dados (RDS)
 
-| Secret | Descrição |
-| --- | --- |
-| `AWS_ACCESS_KEY_ID` | Do AWS Academy (AWS Details). |
-| `AWS_SECRET_ACCESS_KEY` | Do AWS Academy. |
-| `AWS_SESSION_TOKEN` | Do AWS Academy (**Renovar a cada 4h**). |
-| `DOCKER_USERNAME` | Seu usuário Docker Hub. |
-| `DOCKER_PASSWORD` | Senha/Token Docker Hub. |
+O `app.py` já possui um sistema de *Auto-Init*, mas para garantir a estrutura correta (ou resetar dados), conecte-se via **DBeaver** e rode:
 
-### 3. Ajustar Variáveis
+```sql
+-- Criação da Tabela de Usuários (Login/Cadastro)
+CREATE TABLE IF NOT EXISTS usuarios (
+    id SERIAL PRIMARY KEY,
+    nome_completo VARCHAR(150) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    cpf VARCHAR(20) UNIQUE NOT NULL,
+    telefone VARCHAR(20),
+    cep VARCHAR(15),
+    rua VARCHAR(150),
+    numero VARCHAR(20),
+    complemento VARCHAR(100),
+    senha VARCHAR(100) NOT NULL
+);
 
-* **`terraform/variables.tf`**: Atualize a `repo_url` para o seu GitHub.
-* **`k8s/core/deployment.yaml`**: Verifique se a imagem Docker aponta para o seu usuário (`SEU_USER/health-core:latest`).
+-- Criação da Tabela de Consultas (Dashboard)
+CREATE TABLE IF NOT EXISTS consultas (
+    id SERIAL PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    especialidade VARCHAR(100) NOT NULL,
+    horario VARCHAR(20) NOT NULL,
+    status VARCHAR(20) DEFAULT 'Pendente'
+);
 
----
+```
 
-## 🚀 Executando o Lab (Deploy)
+### 3. Deploy das Aplicações (GitOps)
 
-1. Vá na aba **Actions** do GitHub e dispare o workflow **🧪 Lab Lifecycle**.
-2. Aguarde o pipeline finalizar (Build das imagens + Terraform Apply).
-* *Nota:* A criação do RDS pode levar cerca de 10-15 minutos.
+Após o Terraform finalizar, conecte-se ao cluster e aplique o manifesto mestre do ArgoCD:
 
-
-3. Atualize suas credenciais locais para acessar o cluster:
 ```bash
+# Atualizar Kubeconfig
 aws eks update-kubeconfig --region us-east-1 --name health-flow-cluster
 
+# Aplicar App of Apps
+kubectl apply -f argo-applications.yaml
+
 ```
-
-
 
 ---
 
-## 🌐 Acessando as Aplicações e Ferramentas
+## 🌐 Acessando o Sistema
 
-Após o deploy, a AWS leva de **2 a 5 minutos** para propagar os DNS dos LoadBalancers. Se der erro de "Site não encontrado", aguarde um pouco.
+Utilize os comandos abaixo para obter as URLs públicas (LoadBalancers) geradas pela AWS.
 
-### 1. 🏥 Portal HealthFlow (Login & Dashboard)
+### 1. 🏥 Portal Principal (HealthFlow)
 
-Acesse o sistema principal, faça login (`admin`/`Password123!`) ou cadastre novos pacientes.
+Acesse para realizar Login, Cadastro de Pacientes e ver o Dashboard.
 
-* **Obter URL:**
 ```bash
 kubectl get svc core-service -n health-core -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
 
 ```
 
+* **Login Admin:** `admin` / `Password123!`
+* **Login Paciente:** Utilize os dados criados na tela "Criar Nova Conta".
 
+### 2. 📹 Serviço de Telemedicina (Video App)
 
-### 2. 🐙 ArgoCD (GitOps)
+Este serviço é chamado automaticamente pelo botão **"Chamar"** no Dashboard, mas pode ser testado diretamente:
 
-Gerenciamento contínuo do deploy.
-
-* **Obter URL:**
 ```bash
-kubectl get svc argocd-server -n argocd -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+kubectl get svc video-service -n video-app -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
 
 ```
 
+### 3. 🐙 ArgoCD (Gestão de Deploy)
 
-* **Obter Senha (Usuário: `admin`):**
 ```bash
+# URL
+kubectl get svc argocd-server -n argocd -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+
+# Senha (Usuário: admin)
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
 
 ```
 
+### 4. 📊 Grafana (Monitoramento)
 
-
-### 3. 📊 Grafana (Observabilidade)
-
-Dashboards de métricas do cluster e dos pods.
-
-* **Obter URL:**
 ```bash
+# URL
 kubectl get svc prometheus-stack-grafana -n monitoring -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
 
-```
-
-
-* **Obter Senha (Usuário: `admin`):**
-```bash
+# Senha (Usuário: admin)
 kubectl get secret --namespace monitoring prometheus-stack-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
 
 ```
 
-
-
-### 4. 📺 Apresentação (Vídeo)
-
-* **Obter URL:**
-```bash
-kubectl get svc video-service -n health-video -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
-
-```
-
-
-
 ---
 
-## 📂 Estrutura do Projeto
+## 📂 Estrutura do Repositório
 
 ```text
 .
-├── .github/workflows/     # Pipeline CI/CD
-├── argo-applications.yaml # Manifesto Mestre do ArgoCD
+├── .github/workflows/      # Pipelines de CI (Build & Security)
+├── argo-applications.yaml  # Manifesto Mestre (GitOps)
 ├── k8s/
-│   ├── core/              # Manifestos do App Principal (com Env Vars do BD)
-│   ├── video/             # Manifestos da Apresentação
+│   ├── core/               # Manifestos do App Principal (Flask)
+│   ├── video/              # Manifestos da Telemedicina (Nginx)
 ├── src/
-│   ├── core-app/          # Python Flask + HTML Templates (Login/Dash)
-│   └── video/             # Nginx + Vídeo Estático
-├── terraform/             # IaC (EKS, VPC, RDS, Helm)
-└── README.md              # Documentação
+│   ├── core-app/           # Código Python (Flask + Templates Jinja2)
+│   └── video/              # Código Frontend (HTML + Jitsi API)
+├── terraform/              # Infraestrutura como Código (AWS)
+└── README.md               # Documentação Oficial
 
 ```
 
@@ -168,15 +165,18 @@ kubectl get svc video-service -n health-video -o jsonpath='{.status.loadBalancer
 
 ## ⚠️ Troubleshooting (Resolução de Problemas)
 
-* **Erro `spec.selector: field is immutable` no ArgoCD:**
-* Isso ocorre se você mudou as labels do Deployment.
-* **Solução:** No ArgoCD, clique em **Sync**, selecione a opção **Replace** e confirme. Isso força a recriação do recurso.
+* **Erro de "CrashLoopBackOff" no Core App:**
+* Verifique se as variáveis de ambiente do RDS (`DB_HOST`, `DB_USER`) foram injetadas corretamente no Pod.
+* Confirme se a senha do banco no `app.py` bate com a do Terraform.
 
 
 * **Site não abre (Timeout):**
-* Verifique o **Security Group** dos Worker Nodes no Console EC2. Garanta que há uma regra de entrada liberando tráfego de `0.0.0.0/0` para "All Traffic".
+* Verifique o **Security Group** dos *Worker Nodes* na AWS. Garanta que há uma regra de entrada liberando **Porta 80** para `0.0.0.0/0`.
 
 
-* **Erro de Conexão com Banco de Dados:**
-* Verifique se as variáveis de ambiente (`DB_HOST`) foram injetadas corretamente no Pod: `kubectl describe pod -n health-core`.
-* Confirme se o Security Group do RDS permite conexão vinda do Security Group do EKS (Porta 5432).
+* **Câmera/Microfone bloqueados no Vídeo:**
+* Como o AWS Academy usa HTTP por padrão, o navegador pode bloquear dispositivos. Clique no ícone de "cadeado/inseguro" na barra de endereço e **permita** o uso de câmera/microfone para o site.
+
+
+* **Erro de Conexão com Banco (DBeaver):**
+* Certifique-se de usar o **Endpoint do RDS** e não o IP interno. O Security Group deve permitir a porta **5432** para o seu IP.
