@@ -1,85 +1,65 @@
-# 🏥 HealthFlow - Plataforma de Telemedicina & Gestão Hospitalar (DevOps/SRE Lab)
+# 🏥 HealthFlow - Ecossistema de Telemedicina & Gestão Hospitalar (SRE Edition)
 
-![AWS](https://img.shields.io/badge/AWS-232F3E?style=for-the-badge&logo=amazon-aws&logoColor=white)
-![Kubernetes](https://img.shields.io/badge/kubernetes-%23326ce5.svg?style=for-the-badge&logo=kubernetes&logoColor=white)
-![Terraform](https://img.shields.io/badge/terraform-%235835CC.svg?style=for-the-badge&logo=terraform&logoColor=white)
-![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
-![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
+Este repositório contém a implementação completa de uma infraestrutura escalável, resiliente e automatizada para a plataforma **HealthFlow**. O projeto demonstra a aplicação prática de conceitos de **Cloud Architecture**, **GitOps**, **Observabilidade** e **Automated Infrastructure**.
 
-## 📋 Sobre o Projeto
-
-O **HealthFlow** é uma solução completa de infraestrutura moderna simulando um ambiente real de HealthTech. O projeto demonstra a migração de aplicações para **Microserviços**, orquestração com **Kubernetes (EKS)**, pipeline de **CI/CD** e práticas de **SRE (Site Reliability Engineering)**.
-
-A plataforma consiste em:
-1.  **Core App (Dashboard):** Gestão de pacientes, médicos e agendamentos (Python/Flask + PostgreSQL RDS).
-2.  **Video App (Telemedicina):** Sala de conferência segura e criptografada via WebRTC (Jitsi API + Nginx Alpine).
-
----
-
-## 🏗️ Arquitetura e Tecnologias
-
-O projeto foi construído seguindo os pilares do **Well-Architected Framework**:
-
-* **Cloud Provider:** AWS (VPC, EKS, RDS, Load Balancers).
-* **IaC (Infra as Code):** Terraform modularizado.
-* **Containerização:** Docker (Imagens otimizadas Alpine).
-* **Orquestração:** Kubernetes (Deployments, Services, Ingress).
-* **GitOps & CI/CD:** GitHub Actions (Build & Push) + ArgoCD (Sync).
-* **Banco de Dados:** PostgreSQL (Gerenciado via AWS RDS).
+## 📑 Sumário
+1. [Visão Geral e Arquitetura](#-visão-geral-e-arquitetura)
+2. [O que foi construído (Stack Tecnológica)](#-o-que-foi-construído)
+3. [⚙️ Preparação e Ajustes de Código (Fork & Customize)](#️-preparação-e-ajustes-de-código-fork--customize)
+4. [🔐 Configuração de Secrets (GitHub Actions)](#-configuração-de-secrets-github-actions)
+5. [🚀 Guia de Implantação Passo a Passo](#-guia-de-implantação-passo-a-passo)
+6. [🔧 Engenharia de Software: Ajustes e Melhorias](#-engenharia-de-software-ajustes-e-melhorias)
+7. [📋 Guia de Operação e Validação](#-guia-de-operação-e-validação)
+8. [🕵️ Troubleshooting & SRE (Lições Aprendidas)](#-troubleshooting--sre-lições-aprendidas)
+9. [💣 Ciclo de Vida: Destruição Segura](#-ciclo-de-vida-destruição-segura)
 
 ---
 
-## 🚀 Melhorias e Fixes Implementados (SRE Log)
+## 🏛️ Visão Geral e Arquitetura
 
-Durante o desenvolvimento, diversos desafios de infraestrutura foram superados:
+O HealthFlow foi migrado de uma estrutura legada para um modelo de microserviços rodando em **Amazon EKS (Elastic Kubernetes Service)**. A solução separa as responsabilidades de negócio em duas frentes:
 
-### 1. Aplicação de Vídeo (Telemedicina Real-Time)
-* **Problema:** A versão antiga era estática.
-* **Solução:** Reescrita total do Frontend (`src/video-app`) integrando a API **WebRTC do Jitsi Meet**.
-* **Security Fix:** Implementação de tratamento para bloqueios de navegador (Chrome/Edge) em ambientes HTTP (AWS LoadBalancer), forçando flags de origem insegura ou tunelamento via `localhost`.
+* **Microserviço Core (Backend):** Gestão de dados críticos e lógica de agendamento.
+* **Microserviço Video (Telemedicina):** Comunicação em tempo real via WebRTC.
 
-### 2. Banco de Dados e Persistência
-* **Problema:** Erro `Relation does not exist` e `Connection Refused` nos Pods.
-* **Solução:** * Criação de script SQL robusto para inicialização de tabelas (`consultas`, `usuarios`) com cláusulas `IF NOT EXISTS`.
-    * Implementação de lógica de `Retry` e variáveis de ambiente no Python para conexão resiliente com o RDS.
-
-### 3. Terraform Deadlock (Destruição)
-* **Problema:** O `terraform destroy` falhava com `DependencyViolation` porque o Kubernetes criava LoadBalancers que o Terraform desconhecia.
-* **Solução (Automação):** Criação de um script de **"Cleanup Pré-Destroy"** no Pipeline.
-    * O script conecta no cluster EKS antes da destruição.
-    * Remove forçadamente todos os `Service type: LoadBalancer`.
-    * Aguarda a liberação das ENIs (Interfaces de Rede) pela AWS.
-    * Executa o `terraform destroy` limpo.
+A persistência de dados utiliza o **AWS RDS (PostgreSQL)**, garantindo que o estado da aplicação seja independente da vida útil dos containers no cluster.
 
 ---
 
-## 📦 Estrutura do Projeto
+## ⚙️ Preparação e Ajustes de Código (Fork & Customize)
 
-```bash
-.
-├── .github/workflows    # Pipelines de CI/CD (Build e Destroy)
-├── k8s                  # Manifestos Kubernetes (Deployment, Service)
-│   ├── core             # Aplicação Python (Dashboard)
-│   └── video            # Aplicação Nginx (Telemedicina)
-├── src                  # Código Fonte
-│   ├── core-app         # Backend Flask + Conectores DB
-│   └── video-app        # Frontend SPA + Dockerfile Alpine
-├── terraform            # Infraestrutura como Código (EKS, VPC, RDS)
-└── destroy.sh           # Script SRE de limpeza de recursos órfãos
+Se você fez um Fork deste repositório, você precisa ajustar as referências para os **seus** repositórios de imagem, caso contrário, o Kubernetes tentará baixar as imagens do autor original.
 
-```
+### 1. Ajuste nos Manifestos Kubernetes (`/k8s`)
+Nos arquivos `k8s/core/deployment.yaml` e `k8s/video/deployment.yaml`, localize o campo `image:` e substitua pelo seu usuário do Docker Hub:
+* De: `marcos/health-core:latest`
+* Para: `seu-usuario-docker/health-core:latest`
+
+### 2. Ajuste no Workflow de CI/CD (`/.github/workflows`)
+No arquivo de pipeline (ex: `ci.yml` ou `cd.yml`), ajuste as variáveis de nome de imagem para apontar para o seu repositório pessoal no Docker Hub.
 
 ---
 
-## 🛠️ Como Executar
+## 🔐 Configuração de Secrets (GitHub Actions)
 
-### Pré-requisitos
+Para que o pipeline consiga compilar as imagens e destruir a infraestrutura automaticamente, você deve configurar as seguintes **Secrets** no seu repositório do GitHub (**Settings > Secrets and variables > Actions**):
 
-* Conta AWS ativa.
-* Docker, Kubectl e Terraform instalados.
+| Secret Name | Descrição |
+| :--- | :--- |
+| `AWS_ACCESS_KEY_ID` | Sua chave de acesso AWS (fornecida no AWS Details/Credentials) |
+| `AWS_SECRET_ACCESS_KEY` | Sua chave secreta AWS |
+| `AWS_SESSION_TOKEN` | (Obrigatório se usar AWS Academy) O token temporário da sessão |
+| `DOCKER_USERNAME` | Seu usuário do Docker Hub |
+| `DOCKER_PASSWORD` | Seu Access Token ou Senha do Docker Hub |
 
-### 1. Provisionando a Infra (Terraform)
+---
 
+## 🚀 Guia de Implantação Passo a Passo
+
+### 1. Preparação do Ambiente
+Certifique-se de ter o AWS CLI configurado com as credenciais da AWS Academy (ou conta pessoal).
+
+### 2. Provisionamento via Terraform
 ```bash
 cd terraform
 terraform init
@@ -87,35 +67,72 @@ terraform apply -auto-approve
 
 ```
 
-### 2. Configurando o Banco de Dados
+*Aguarde a saída dos endpoints do cluster e do RDS no terminal.*
 
-Conecte-se ao RDS criado (via DBeaver ou PgAdmin) e execute o script de inicialização localizado em `src/core-app/init.sql` para criar as tabelas `usuarios` e `consultas`.
-
-### 3. Deploy das Aplicações (ArgoCD ou Manual)
+### 3. Conexão com o Cluster
 
 ```bash
-# Aplica os manifestos
-kubectl apply -f k8s/core/
-kubectl apply -f k8s/video/
+aws eks update-kubeconfig --region us-east-1 --name health-cluster
 
 ```
 
-### 4. Acessando a Telemedicina (Fix de Navegador)
+### 4. Inicialização do Banco de Dados (Passo Crucial)
 
-Como o LoadBalancer da AWS Academy é HTTP, habilite a flag de segurança no Chrome para testar a câmera:
+A aplicação não iniciará corretamente se o esquema do banco não existir.
 
-1. Acesse `chrome://flags/#unsafely-treat-insecure-origin-as-secure`
-2. Adicione a URL do seu LoadBalancer.
-3. Clique em "Enabled" e reinicie o navegador.
+1. Obtenha o Endpoint do RDS (saída do Terraform).
+2. Use o DBeaver ou PgAdmin para conectar ao banco `healthflowdb`.
+3. Execute o script `src/core-app/init.sql`. **Este script cria as tabelas `usuarios` e `consultas` e insere o acesso Admin inicial.**
 
 ---
 
+## 🔧 Engenharia de Software: Ajustes e Melhorias
 
-## 👨‍💻 Autor
+* **Refatoração do Video-App:** Integrada a API do Jitsi Meet para fornecer vídeo HD e chat via WebRTC.
+* **Resiliência de Conexão:** Backend Flask configurado com lógica de `Retry` para aguardar o banco RDS estar disponível, evitando CrashLoopBackOff.
+* **Limpeza de Código:** Removidos imports obsoletos e variáveis não utilizadas para manter o código limpo e performático.
 
-**Marcos** - *DevOps & SRE Engineer*
-Projeto desenvolvido como parte do Bootcamp de Engenharia de Confiabilidade.
+---
 
-```
+## 📋 Guia de Operação e Validação
+
+### Como pegar os acessos (Load Balancers)
+
+Rode o comando: `kubectl get svc -A`.
+
+* O link do **Dashboard** estará em `core-service` (External IP).
+* O link da **Telemedicina** estará em `video-service` (External IP).
+
+### Credenciais Padrão (Criadas no init.sql)
+
+* **Login Admin:** `admin@healthflow.com`
+* **Senha:** `123`
+
+### Validação da Telemedicina
+
+Para testar a câmera em conexões HTTP:
+
+1. Acesse `chrome://flags/#unsafely-treat-insecure-origin-as-secure`.
+2. Insira o endereço do Load Balancer do Video-App e marque como **Enabled**.
+
+---
+
+## 🕵️ Troubleshooting & SRE (Lições Aprendidas)
+
+* **Erro 500 no Dashboard:** Geralmente causado pela falta das tabelas no RDS. Execute o `init.sql`.
+* **ErrImagePull:** Verifique se você atualizou o nome da imagem no `deployment.yaml` para o seu usuário do Docker Hub e se o repositório é público.
+* **DependencyViolation no Terraform:** Ocorre quando o LoadBalancer do Kubernetes ainda está ativo ao tentar deletar a VPC. Use o script `destroy.sh`.
+
+---
+
+**O que o script faz:**
+
+1. Conecta ao EKS e deleta todos os `Services` do tipo LoadBalancer.
+2. Aguardas 60 segundos para a AWS desalocar as interfaces de rede.
+3. Executa o `terraform destroy` de forma limpa.
+
+---
+
+**Autor:** Marcos (SRE/DevOps Engineer)
 
 ```
