@@ -1,66 +1,15 @@
-name: 2. CD - Infrastructure (Auto-Fix)
+# ... (após o Passo 1 de Apply Infra Core)
 
-on:
-  workflow_dispatch:
-    inputs:
-      action:
-        description: 'Ação do Terraform'
-        required: true
-        default: 'apply'
-        type: choice
-        options:
-        - apply
-        - destroy
-
-jobs:
-  terraform-manager:
-    name: 🏗️ Terraform Infrastructure
-    runs-on: ubuntu-latest
-    env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      AWS_SESSION_TOKEN: ${{ secrets.AWS_SESSION_TOKEN }}
-      AWS_REGION: us-east-1
-
-    steps:
-      - name: Checkout do Código
-        uses: actions/checkout@v3
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_wrapper: false
-
-      - name: Terraform Init
-        run: terraform init
-        working-directory: ./terraform
-
-      # ======================================================
-      # ESTRATÉGIA DE APPLY EM DUAS ETAPAS (Fix Connection Refused)
-      # ======================================================
-      
-      # PASSO 1: Cria apenas a infraestrutura física (VPC e EKS)
-      # Isso garante que o endpoint do cluster exista antes de tentar instalar o Helm
-      - name: 1️⃣ Terraform Apply - Infra Core (VPC + EKS)
+      - name: 🛰️ Update Kubeconfig
         if: ${{ inputs.action == 'apply' }}
         run: |
-          echo "🚧 Criando Cluster EKS e Rede primeiro..."
-          terraform apply -target=module.vpc -target=module.eks -auto-approve
-        working-directory: ./terraform
+          aws eks update-kubeconfig --region us-east-1 --name ${{ secrets.EKS_CLUSTER_NAME }} 
+          # Substitua o nome acima pelo nome real do seu cluster se for fixo
 
-      # PASSO 2: Instala todo o resto (Helm, ArgoCD, Apps)
-      # Agora que o cluster existe, o provider Helm consegue conectar
+      # PASSO 2: Agora o Terraform terá o contexto correto para o kubectl
       - name: 2️⃣ Terraform Apply - Full Stack (Apps & Monitoring)
         if: ${{ inputs.action == 'apply' }}
         run: |
           echo "🚀 Instalando Aplicações e Monitoramento..."
           terraform apply -auto-approve
-        working-directory: ./terraform
-
-      # ======================================================
-      # ESTRATÉGIA DE DESTROY (Padrão)
-      # ======================================================
-      - name: 🧨 Terraform Destroy
-        if: ${{ inputs.action == 'destroy' }}
-        run: terraform destroy -auto-approve
         working-directory: ./terraform
