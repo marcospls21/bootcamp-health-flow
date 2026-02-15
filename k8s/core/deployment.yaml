@@ -3,30 +3,29 @@ kind: Deployment
 metadata:
   name: core-app
   namespace: health-core
-  labels:
-    app: core
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
-      app: core
+      app: core-app
   template:
     metadata:
       labels:
-        app: core
+        app: core-app
     spec:
       containers:
-      - name: core-app
-        # --- ATENÇÃO: SUBSTITUA ABAIXO ---
-        image: marcospls/health-core:latest
-        # ---------------------------------
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 80
-        resources:
-          requests:
-            memory: "64Mi"
-            cpu: "100m"
-          limits:
-            memory: "256Mi"
-            cpu: "500m"
+        - name: core-app
+          image: marcospls/health-core:latest
+          ports:
+            - containerPort: 5000
+          # --- ADICIONE A PARTIR DAQUI ---
+          env:
+            - name: DB_HOST
+              value: "health-flow-db.cacwd1w4zn8p.us-east-1.rds.amazonaws.com" # O endpoint do seu RDS
+            - name: DB_NAME
+              value: "healthflowdb"
+            - name: DB_USER
+              value: "dbadmin"
+            - name: DB_PASS
+              value: "Password123!"
+          # --- FIM DA ADIÇÃO ---

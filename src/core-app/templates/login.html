@@ -1,136 +1,70 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>HealthFlow | Login</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthFlow - Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/bootstrap.min.css" rel="stylesheet">
     <style>
-        :root {
-            --primary: #1f7ae0;
-            --secondary: #0f3c6e;
-            --background: #f5f7fb;
-            --card: #ffffff;
-            --text: #1f2933;
-            --muted: #6b7280;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: Arial, Helvetica, sans-serif;
-        }
-
         body {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            min-height: 100vh;
+            background-color: #f0f2f5;
             display: flex;
             align-items: center;
-            justify-content: center;
+            height: 100vh;
         }
 
-        .login-container {
-            background: var(--card);
-            padding: 40px;
-            border-radius: 12px;
+        .login-card {
             width: 100%;
-            max-width: 420px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-        }
-
-        .login-container h1 {
-            text-align: center;
-            margin-bottom: 10px;
-            color: var(--primary);
-        }
-
-        .login-container p {
-            text-align: center;
-            margin-bottom: 30px;
-            color: var(--muted);
-            font-size: 14px;
-        }
-
-        .form-group {
-            margin-bottom: 18px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-size: 14px;
-        }
-
-        input {
-            width: 100%;
-            padding: 12px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            font-size: 14px;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-
-        button {
-            width: 100%;
-            background: var(--primary);
-            color: #fff;
-            border: none;
-            padding: 14px;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-
-        button:hover {
-            background: #1865ba;
-        }
-
-        .footer-text {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 13px;
-            color: var(--muted);
-        }
-
-        .footer-text a {
-            color: var(--primary);
-            text-decoration: none;
+            max-width: 400px;
+            padding: 2rem;
+            margin: auto;
+            border-radius: 1rem;
+            background: white;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
 
 <body>
-
-    <div class="login-container">
-        <h1>HealthFlow</h1>
-        <p>Acesso seguro à plataforma</p>
-
-        <form>
-            <div class="form-group">
-                <label for="email">E-mail</label>
-                <input type="email" id="email" name="email" placeholder="seu@email.com" required />
+    <div class="login-card">
+        <h2 class="text-center text-primary fw-bold mb-4">HealthFlow</h2>
+        <form action="/auth" method="POST">
+            <div class="mb-3">
+                <label class="form-label">Usuário</label>
+                <input type="text" name="usuario" class="form-control" required>
             </div>
-
-            <div class="form-group">
-                <label for="password">Senha</label>
-                <input type="password" id="password" name="password" placeholder="********" required />
+            <div class="mb-3">
+                <label class="form-label">Senha</label>
+                <input type="password" name="senha" class="form-control" required>
             </div>
-
-            <button type="submit">Entrar</button>
+            <button type="submit" class="btn btn-primary w-100">Entrar</button>
         </form>
-
-        <div class="footer-text">
-            <p>Conexão protegida por <strong>TLS</strong></p>
-            <p><a href="index.html">Voltar para a página inicial</a></p>
+        <div class="text-center mt-4 pt-3 border-top">
+            <button class="btn btn-outline-success w-100" data-bs-toggle="modal" data-bs-target="#modalCad">Novo
+                Cadastro</button>
         </div>
     </div>
 
+    <div class="modal fade" id="modalCad" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content" action="/cadastrar" method="POST">
+                <div class="modal-header">
+                    <h5>Solicitar Consulta</h5>
+                </div>
+                <div class="modal-body">
+                    <input type="text" name="nome" class="form-control mb-2" placeholder="Nome do Paciente" required>
+                    <input type="text" name="especialidade" class="form-control mb-2"
+                        placeholder="Especialidade (Ex: Cardio)" required>
+                    <input type="time" name="horario" class="form-control mb-2" required>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Cadastrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
