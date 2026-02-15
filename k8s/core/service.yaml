@@ -4,10 +4,10 @@ metadata:
   name: core-service
   namespace: health-core
 spec:
+  type: LoadBalancer
   selector:
-    app: core
+    app: core-app
   ports:
-  - protocol: TCP
-    port: 80           # A porta que você acessa no navegador (Load Balancer)
-    targetPort: 5000   # A porta onde o Python Flask está rodando dentro do Pod
-  type: LoadBalancer   # MUDANÇA: Agora ele cria um IP externo na AWS
+    - protocol: TCP
+      port: 80         # Porta que você digita no navegador (padrão)
+      targetPort: 5000 # Porta que o seu app.py está ouvindo
