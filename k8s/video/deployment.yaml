@@ -4,16 +4,16 @@ metadata:
   name: video-app
   namespace: health-video
   labels:
-    app: video
+    app: video-app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: video
+      app: video-app
   template:
     metadata:
       labels:
-        app: video
+        app: video-app
     spec:
       containers:
       - name: video-app
